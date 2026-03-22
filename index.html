@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SI-PAMAN TRI | Laporan Petugas Taman</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --primary: #2e7d32; --secondary: #4caf50; }
+        body { background: #f0f4f0; }
+        .bg-green-custom { background-color: var(--primary); }
+        .btn-submit { background-color: var(--primary); transition: 0.3s; }
+        .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
+        .loader { border-top-color: #ffffff; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-900">
+
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative">
+        
+        <div class="bg-green-custom p-8 text-white text-center rounded-b-[30px] shadow-lg">
+            <div class="flex justify-center mb-3">
+                <svg class="w-16 h-16 text-green-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-extrabold tracking-tight">SI-PAMAN TRI</h1>
+            <p class="text-sm opacity-90 mt-1 font-light italic">Sistem Pelaporan Petugas Taman Terintegrasi</p>
+        </div>
+
+        <form id="reportForm" class="p-6 space-y-5">
+            
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
+                <select id="petugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-green-500 outline-none appearance-none bg-gray-50">
+                    <option value="">-- Pilih Nama --</option>
+                    <option value="Muliadi">Muliadi</option>
+                    <option value="Julianto Thomas Geraldo">Julianto Thomas Geraldo</option>
+                    <option value="Ferdinanto Anggoro">Ferdinanto Anggoro</option>
+                    <option value="Venna Anadya Apryana">Venna Anadya Apryana</option>
+                    <option value="Utuh">Utuh</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Taman</label>
+                <select id="lokasi" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-green-500 outline-none appearance-none bg-gray-50">
+                    <option value="">-- Pilih Lokasi --</option>
+                    <option value="Taman Kota Buntok">Taman Kota Buntok</option>
+                    <option value="Taman Tugu">Taman Tugu</option>
+                    <option value="Taman Sababilah">Taman Sababilah</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
+                <div class="relative">
+                    <input type="file" id="foto" accept="image/*" capture="environment" required 
+                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor:pointer border-2 border-dashed border-gray-300 p-4 rounded-xl">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan Pekerjaan</label>
+                <textarea id="catatan" rows="3" placeholder="Contoh: Menyapu taman, memangkas dahan mati..." 
+                    class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-green-500 outline-none bg-gray-50"></textarea>
+            </div>
+
+            <input type="hidden" id="gps">
+
+            <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
+                <span>KIRIM LAPORAN</span>
+            </button>
+
+            <div id="status" class="text-center text-sm font-medium pt-2"></div>
+        </form>
+
+        <footer class="text-center py-6 text-gray-400 text-xs">
+            &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
+        </footer>
+    </div>
+
+    <script>
+        // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE SCRIPT ANDA
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyvnNegcNPAU6AHrNTncxsar8u_-cugfnmvuPv-nRS6gJYxub02nyiuiix3FnL1myREQg/exec';
+        
+        const form = document.getElementById('reportForm');
+        const btn = document.getElementById('submitBtn');
+        const status = document.getElementById('status');
+
+        // 1. Ambil GPS Otomatis saat halaman dibuka
+        window.onload = function() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
+                    console.log("GPS Terdeteksi: " + document.getElementById('gps').value);
+                }, function(error) {
+                    console.warn("GPS tidak diizinkan atau tidak aktif.");
+                });
+            }
+        };
+
+        // 2. Proses Submit Form
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+            
+            btn.disabled = true;
+            btn.innerHTML = `<div class="loader ease-linear rounded-full border-4 border-t-4 border-gray-200 h-6 w-6"></div> <span>Mengirim...</span>`;
+            status.innerHTML = "";
+
+            const fileInput = document.getElementById('foto');
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function() {
+                // Ambil base64 string saja (tanpa header data:image/jpeg;base64,)
+                const bytes = reader.result.split(',')[1];
+                
+                // Siapkan data teks untuk parameter URL (GET)
+                const petugas = encodeURIComponent(document.getElementById('petugas').value);
+                const lokasi = encodeURIComponent(document.getElementById('lokasi').value);
+                const catatan = encodeURIComponent(document.getElementById('catatan').value);
+                const gps = encodeURIComponent(document.getElementById('gps').value);
+                
+                const finalUrl = `${scriptURL}?petugas=${petugas}&lokasi=${lokasi}&catatan=${catatan}&gps=${gps}`;
+
+                // Kirim data foto via POST body
+                fetch(finalUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        bytes: bytes,
+                        mimeType: file.type
+                    })
+                })
+                .then(response => {
+                    status.innerHTML = "✅ Laporan Berhasil Terkirim ke Database!";
+                    status.classList.add("text-green-600");
+                    form.reset();
+                    btn.disabled = false;
+                    btn.innerHTML = "KIRIM LAPORAN";
+                })
+                .catch(error => {
+                    status.innerHTML = "❌ Gagal Mengirim. Coba lagi atau hubungi Admin.";
+                    status.classList.add("text-red-600");
+                    btn.disabled = false;
+                    btn.innerHTML = "KIRIM LAPORAN";
+                });
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
