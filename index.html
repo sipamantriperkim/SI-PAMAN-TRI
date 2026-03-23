@@ -49,7 +49,7 @@
                     <option value="KENCANA SAKTI HAWINO">KENCANA SAKTI HAWINO</option>
                     <option value="RAHMAT">RAHMAT</option>
                     <option value="SRI LOVA">SRI LOVA</option>
-                </select>
+                    </select>
             </div>
 
             <div>
@@ -100,15 +100,33 @@
     </div>
 
     <script>
-        // GANTI URL DI BAWAH INI DENGAN URL WEB APP GOOGLE SCRIPT ANDA
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxgile4JoZ3j9kVCojW0jX7aRBSLuKwQD2l7TbNf1lZQ9-fqVUpn-mlZ3XTDk7hZAKJ8Q/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
 
-        // 1. Ambil GPS Otomatis saat halaman dibuka
+        // --- FUNGSI OTOMATIS URUT ABJAD ---
+        function urutkanDropdown(id) {
+            const selectEl = document.getElementById(id);
+            if (!selectEl) return;
+            // Ambil semua opsi kecuali yang pertama (placeholder)
+            const options = Array.from(selectEl.options).slice(1);
+            
+            // Urutkan berdasarkan teks
+            options.sort((a, b) => a.text.localeCompare(b.text));
+            
+            // Hapus semua isi kecuali placeholder, lalu masukkan yang sudah urut
+            while (selectEl.options.length > 1) { selectEl.remove(1); }
+            options.forEach(opt => selectEl.add(opt));
+        }
+
         window.onload = function() {
+            // Jalankan pengurutan otomatis
+            urutkanDropdown('petugas');
+            urutkanDropdown('lokasi');
+
+            // Deteksi GPS
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
                     document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
@@ -119,7 +137,6 @@
             }
         };
 
-        // 2. Proses Submit Form
         form.addEventListener('submit', e => {
             e.preventDefault();
             
@@ -132,10 +149,8 @@
             const reader = new FileReader();
 
             reader.onload = function() {
-                // Ambil base64 string saja (tanpa header data:image/jpeg;base64,)
                 const bytes = reader.result.split(',')[1];
                 
-                // Siapkan data teks untuk parameter URL (GET)
                 const petugas = encodeURIComponent(document.getElementById('petugas').value);
                 const lokasi = encodeURIComponent(document.getElementById('lokasi').value);
                 const catatan = encodeURIComponent(document.getElementById('catatan').value);
@@ -143,7 +158,6 @@
                 
                 const finalUrl = `${scriptURL}?petugas=${petugas}&lokasi=${lokasi}&catatan=${catatan}&gps=${gps}`;
 
-                // Kirim data foto via POST body
                 fetch(finalUrl, {
                     method: 'POST',
                     body: JSON.stringify({
