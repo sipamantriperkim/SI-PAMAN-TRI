@@ -13,7 +13,6 @@
         .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
         .loader { border-top-color: #ffffff; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Style Tambahan untuk Tab */
         .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
@@ -65,6 +64,7 @@
                 </div>
 
                 <input type="hidden" id="gps">
+                <input type="hidden" id="pengawasOtomatis">
 
                 <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
                     <span>KIRIM LAPORAN</span>
@@ -78,7 +78,10 @@
         </div>
 
         <div id="sectionVerif" class="hidden p-6 space-y-4">
-            <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Menunggu Persetujuan</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Menunggu Persetujuan</h2>
+                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold">KELUAR</button>
+            </div>
             <div id="pendingContainer" class="space-y-3">
                 <p class="text-center text-gray-400 py-10 italic">Memuat data...</p>
             </div>
@@ -92,19 +95,52 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbx9W21kLIms6dRaIa1ZE7jtbwOpInlKj22xPV28rTpt2isCIrGpkYdWHT8oWCyFAcwETg/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzE8jkmeOhWDuZCcP4l3rBqJ60Uk3xPr9THMwXlumP3-QIvPaSmsW9KaPaRCw3uvPhqiw/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
         const selectPetugas = document.getElementById('petugas');
         const selectLokasi = document.getElementById('lokasi');
+        const inputPengawas = document.getElementById('pengawasOtomatis');
         const successMsg = document.getElementById('successMessage');
 
         let dataMapping = {}; 
+        window.currentUserPengawas = null;
 
-        function switchTab(mode) {
+        function logoutPengawas() {
+            window.currentUserPengawas = null;
+            switchTab('lapor');
+            alert("Sesi pengawas berakhir.");
+        }
+
+        async function switchTab(mode) {
             const isLapor = mode === 'lapor';
+            
+            if (!isLapor && !window.currentUserPengawas) {
+                try {
+                    const res = await fetch(scriptURL + "?action=getAuthPengawas");
+                    const authData = await res.json();
+                    
+                    const namaInput = prompt("Masukkan Nama Pengawas:");
+                    if (authData[namaInput]) {
+                        const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
+                        if (pinInput === authData[namaInput]) {
+                            window.currentUserPengawas = namaInput;
+                        } else {
+                            alert("❌ PIN Salah!");
+                            return;
+                        }
+                    } else {
+                        alert("❌ Nama Pengawas tidak terdaftar!");
+                        return;
+                    }
+                } catch (err) {
+                    alert("Gagal memverifikasi identitas.");
+                    return;
+                }
+            }
+
             document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
             document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
             
@@ -139,19 +175,19 @@
 
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
+            inputPengawas.value = "";
             if (this.value && dataMapping[this.value]) {
-                dataMapping[this.value].sort().forEach(loc => {
+                dataMapping[this.value].lokasi.sort().forEach(loc => {
                     const opt = document.createElement('option');
                     opt.value = opt.text = loc;
                     selectLokasi.add(opt);
                 });
+                inputPengawas.value = dataMapping[this.value].pengawas || "-";
             }
         });
 
-        // 3. PROSES KIRIM DATA (LOGIKA BARU)
         form.addEventListener('submit', e => {
             e.preventDefault();
-            
             btn.disabled = true;
             btn.innerHTML = `<span>Mengirim...</span>`;
             successMsg.classList.add('hidden'); 
@@ -165,9 +201,9 @@
                     petugas: selectPetugas.value,
                     lokasi: selectLokasi.value,
                     catatan: document.getElementById('catatan').value,
-                    gps: document.getElementById('gps').value
+                    gps: document.getElementById('gps').value,
+                    pengawas: inputPengawas.value
                 };
-                
                 const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
 
                 fetch(finalUrl, {
@@ -175,20 +211,14 @@
                     body: JSON.stringify({ bytes: bytes, mimeType: file.type })
                 })
                 .then(() => {
-                    // Tampilkan pesan sukses di bawah tombol
                     successMsg.classList.remove('hidden');
-                    
                     form.reset();
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
-                    
-                    // Sembunyikan pesan sukses otomatis setelah 5 detik
-                    setTimeout(() => {
-                        successMsg.classList.add('hidden');
-                    }, 5000);
+                    setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
                 })
                 .catch(() => {
-                    status.innerHTML = "❌ Gagal Mengirim. Silakan coba lagi.";
+                    status.innerHTML = "❌ Gagal Mengirim.";
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                 });
@@ -218,15 +248,18 @@
                     });
                 })
                 .catch(() => {
-                    container.innerHTML = '<p class="text-center text-red-400 py-10">Gagal memuat data verifikasi.</p>';
+                    container.innerHTML = '<p class="text-center text-red-400 py-10">Gagal memuat data.</p>';
                 });
         }
 
         function doVerify(rowId, status) {
-            const pengawas = prompt("Masukkan Nama Pengawas:");
-            if (!pengawas) return;
+            if (!window.currentUserPengawas) {
+                alert("Sesi berakhir, silakan login kembali.");
+                switchTab('lapor');
+                return;
+            }
 
-            fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${pengawas}`, { method: 'POST' })
+            fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
                 .then(() => {
                     alert("Berhasil!");
                     loadPending();
