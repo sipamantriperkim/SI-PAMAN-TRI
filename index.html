@@ -3,167 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SI-PAMAN TRI | Laporan Petugas Taman</title>
+    <title>SI-PAMAN TRI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --primary: #2e7d32; --secondary: #4caf50; }
-        body { background: #f0f4f0; }
-        .bg-green-custom { background-color: var(--primary); }
-        .btn-submit { background-color: var(--primary); transition: 0.3s; }
-        .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
-        .loader { border-top-color: #ffffff; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        :root { --primary: #2e7d32; }
+        body { background: #f3f4f6; }
+        .active-tab { background: white; color: var(--primary); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
-<body class="font-sans antialiased text-gray-900">
-
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative">
+<body class="antialiased">
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col">
         
-        <div class="bg-green-custom p-8 text-white text-center rounded-b-[30px] shadow-lg">
-            <div class="flex justify-center mb-3">
-                <svg class="w-16 h-16 text-green-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z" />
-                </svg>
-            </div>
-            <h1 class="text-3xl font-extrabold tracking-tight">SI-PAMAN TRI</h1>
-            <p class="text-sm opacity-90 mt-1 font-light italic">Sistem Pelaporan Petugas Taman Terintegrasi</p>
+        <div class="bg-green-800 p-6 text-white text-center rounded-b-3xl shadow-md">
+            <h1 class="text-2xl font-black italic">SI-PAMAN TRI</h1>
+            <p class="text-xs opacity-80">Dinas Perumahan Rakyat & Kawasan Permukiman</p>
         </div>
 
-        <form id="reportForm" class="p-6 space-y-5">
-            
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
-                <select id="petugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                    <option value="">-- Memuat Nama... --</option>
-                </select>
+        <div class="flex p-2 bg-gray-200 m-4 rounded-xl">
+            <button onclick="showTab('lapor')" id="btnLapor" class="flex-1 py-2 text-sm font-bold rounded-lg active-tab">LAPOR</button>
+            <button onclick="showTab('verif')" id="btnVerif" class="flex-1 py-2 text-sm font-bold rounded-lg text-gray-500">VERIFIKASI</button>
+        </div>
+
+        <div id="tabLapor" class="p-6 space-y-4">
+            <form id="formLapor" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Nama Petugas</label>
+                    <select id="petugas" required class="w-full p-3 border rounded-xl bg-gray-50 focus:ring-2 focus:ring-green-500 outline-none">
+                        <option value="">Memuat...</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Lokasi</label>
+                    <select id="lokasi" required class="w-full p-3 border rounded-xl bg-gray-50 outline-none">
+                        <option value="">Pilih Petugas Dulu</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Foto Pekerjaan</label>
+                    <input type="file" id="foto" accept="image/*" capture="environment" required class="w-full text-xs border-2 border-dashed p-4 rounded-xl">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1 uppercase">Catatan</label>
+                    <textarea id="catatan" rows="2" class="w-full p-3 border rounded-xl bg-gray-50 outline-none"></textarea>
+                </div>
+                <input type="hidden" id="gps">
+                <button type="submit" id="btnKirim" class="w-full bg-green-700 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-green-600">KIRIM LAPORAN</button>
+            </form>
+        </div>
+
+        <div id="tabVerif" class="hidden p-6 space-y-4">
+            <h2 class="text-sm font-bold text-gray-500 uppercase border-b pb-2">Laporan Pending</h2>
+            <div id="listPending" class="space-y-3">
+                <p class="text-center text-gray-400 py-10 italic">Memuat data verifikasi...</p>
             </div>
+        </div>
 
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Taman</label>
-                <select id="lokasi" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                    <option value="">-- Pilih Nama Petugas Dulu --</option>
-                </select>
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
-                <input type="file" id="foto" accept="image/*" capture="environment" required 
-                    class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
-            </div>
-
-            <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan Pekerjaan</label>
-                <textarea id="catatan" rows="3" placeholder="Contoh: Menyapu taman, memangkas dahan mati..." 
-                    class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50"></textarea>
-            </div>
-
-            <input type="hidden" id="gps">
-
-            <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
-                <span>KIRIM LAPORAN</span>
-            </button>
-
-            <div id="status" class="text-center text-sm font-medium pt-2"></div>
-        </form>
-
-        <footer class="text-center py-6 text-gray-400 text-xs">
-            &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
+        <footer class="mt-auto text-center py-6 text-[10px] text-gray-400 uppercase tracking-widest">
+            &copy; 2026 Bidang Kawasan Permukiman
         </footer>
     </div>
 
     <script>
-        // PASTIKAN URL INI ADALAH URL DEPLOYMENT TERBARU ANDA
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxcr5944WdnmWzokn7oN_AjAwftVymQwGZmYgw9R7pZWQHnMP0dH7ENgqaDcbO0DiPtCQ/exec';
-        
-        const form = document.getElementById('reportForm');
-        const btn = document.getElementById('submitBtn');
-        const status = document.getElementById('status');
-        const selectPetugas = document.getElementById('petugas');
-        const selectLokasi = document.getElementById('lokasi');
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwqiD5XXluRGQKWMGBvPq11bwLcYCpBg1PEe6_QPnQmX2A1uubZ5uXN303-54uA04-5iQ/exec';
+        let mappingData = {};
 
-        let dataMapping = {}; // Tempat menyimpan data dari Sheets
+        function showTab(tab) {
+            document.getElementById('tabLapor').classList.toggle('hidden', tab !== 'lapor');
+            document.getElementById('tabVerif').classList.toggle('hidden', tab !== 'verif');
+            document.getElementById('btnLapor').className = tab === 'lapor' ? 'flex-1 py-2 text-sm font-bold rounded-lg active-tab' : 'flex-1 py-2 text-sm font-bold rounded-lg text-gray-500';
+            document.getElementById('btnVerif').className = tab === 'verif' ? 'flex-1 py-2 text-sm font-bold rounded-lg active-tab' : 'flex-1 py-2 text-sm font-bold rounded-lg text-gray-500';
+            if(tab === 'verif') loadPending();
+        }
 
-        // 1. AMBIL DATA OTOMATIS SAAT HALAMAN DIBUKA
-        window.onload = function() {
-            fetch(scriptURL)
-                .then(res => res.json())
-                .then(data => {
-                    dataMapping = data;
-                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
-                    
-                    // Urutkan nama abjad dan masukkan ke dropdown
-                    Object.keys(data).sort().forEach(nama => {
-                        const opt = document.createElement('option');
-                        opt.value = nama;
-                        opt.text = nama;
-                        selectPetugas.add(opt);
-                    });
-                })
-                .catch(err => {
-                    status.innerHTML = "Gagal memuat daftar petugas. Periksa koneksi.";
-                });
-
-            // Deteksi GPS
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
-                });
-            }
+        window.onload = () => {
+            fetch(scriptURL + "?action=getPetugas").then(r => r.json()).then(data => {
+                mappingData = data;
+                const sel = document.getElementById('petugas');
+                sel.innerHTML = '<option value="">-- PILIH NAMA --</option>';
+                Object.keys(data).sort().forEach(n => sel.add(new Option(n, n)));
+            });
+            if (navigator.geolocation) navigator.geolocation.getCurrentPosition(p => {
+                document.getElementById('gps').value = p.coords.latitude + "," + p.coords.longitude;
+            });
         };
 
-        // 2. FILTER LOKASI BERDASARKAN NAMA
-        selectPetugas.addEventListener('change', function() {
-            const namaTerpilih = this.value;
-            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
-            
-            if (namaTerpilih && dataMapping[namaTerpilih]) {
-                dataMapping[namaTerpilih].sort().forEach(loc => {
-                    const opt = document.createElement('option');
-                    opt.value = loc;
-                    opt.text = loc;
-                    selectLokasi.add(opt);
-                });
-            }
-        });
+        document.getElementById('petugas').onchange = function() {
+            const loc = document.getElementById('lokasi');
+            loc.innerHTML = '<option value="">-- PILIH LOKASI --</option>';
+            if(this.value) mappingData[this.value].sort().forEach(l => loc.add(new Option(l, l)));
+        };
 
-        // 3. PROSES KIRIM DATA
-        form.addEventListener('submit', e => {
+        document.getElementById('formLapor').onsubmit = e => {
             e.preventDefault();
-            btn.disabled = true;
-            btn.innerHTML = `<span>Mengirim...</span>`;
-            
-            const fileInput = document.getElementById('foto');
-            const file = fileInput.files[0];
+            const b = document.getElementById('btnKirim');
+            b.disabled = true; b.innerText = "MENGIRIM...";
+            const file = document.getElementById('foto').files[0];
             const reader = new FileReader();
-
-            reader.onload = function() {
+            reader.onload = () => {
                 const bytes = reader.result.split(',')[1];
-                const params = {
-                    petugas: selectPetugas.value,
-                    lokasi: selectLokasi.value,
+                const qs = new URLSearchParams({
+                    petugas: document.getElementById('petugas').value,
+                    lokasi: document.getElementById('lokasi').value,
                     catatan: document.getElementById('catatan').value,
                     gps: document.getElementById('gps').value
-                };
-                
-                const finalUrl = `${scriptURL}?petugas=${encodeURIComponent(params.petugas)}&lokasi=${encodeURIComponent(params.lokasi)}&catatan=${encodeURIComponent(params.catatan)}&gps=${encodeURIComponent(params.gps)}`;
-
-                fetch(finalUrl, {
-                    method: 'POST',
-                    body: JSON.stringify({ bytes: bytes, mimeType: file.type })
-                })
-                .then(() => {
-                    status.innerHTML = "✅ Laporan Berhasil Terkirim!";
-                    form.reset();
-                    btn.disabled = false;
-                    btn.innerHTML = "KIRIM LAPORAN";
-                })
-                .catch(() => {
-                    status.innerHTML = "❌ Gagal Mengirim.";
-                    btn.disabled = false;
                 });
+                fetch(`${scriptURL}?${qs}`, { method: 'POST', body: JSON.stringify({bytes, mimeType: file.type}) })
+                .then(() => { alert("Laporan Terkirim!"); location.reload(); });
             };
             reader.readAsDataURL(file);
-        });
+        };
+
+        function loadPending() {
+            const container = document.getElementById('listPending');
+            container.innerHTML = "Memuat...";
+            fetch(scriptURL + "?action=getPending").then(r => r.json()).then(data => {
+                container.innerHTML = data.length ? "" : "Tidak ada laporan pending.";
+                data.forEach(d => {
+                    container.innerHTML += `
+                        <div class="bg-white p-4 rounded-xl border-l-4 border-yellow-400 shadow-sm text-xs space-y-2">
+                            <p><strong>${d.petugas}</strong> - ${d.lokasi}</p>
+                            <p class="text-gray-500 italic">"${d.catatan}"</p>
+                            <div class="flex space-x-2 pt-2">
+                                <a href="${d.foto}" target="_blank" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-md">Foto</a>
+                                <button onclick="verify(${d.rowId}, 'APPROVED')" class="bg-green-700 text-white px-3 py-1 rounded-md font-bold">SETUJU</button>
+                                <button onclick="verify(${d.rowId}, 'REJECTED')" class="bg-red-600 text-white px-3 py-1 rounded-md font-bold">TOLAK</button>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
+        function verify(id, status) {
+            const p = prompt("Nama Pengawas:");
+            if(!p) return;
+            fetch(`${scriptURL}?action=verify&rowId=${id}&status=${status}&pengawas=${p}`, {method:'POST'})
+            .then(() => { alert("Berhasil!"); loadPending(); });
+        }
     </script>
 </body>
 </html>
