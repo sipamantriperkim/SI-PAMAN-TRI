@@ -78,12 +78,9 @@
         </div>
 
         <div id="sectionVerif" class="hidden p-6 space-y-4">
-            <div class="flex justify-between items-center border-b pb-2">
-                <div>
-                    <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Verifikasi Laporan</h2>
-                    <p id="labelPengawas" class="text-[10px] text-green-600 font-medium"></p>
-                </div>
-                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold hover:bg-red-200">KELUAR</button>
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Menunggu Persetujuan</h2>
+                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold">KELUAR</button>
             </div>
             <div id="pendingContainer" class="space-y-3">
                 <p class="text-center text-gray-400 py-10 italic">Memuat data...</p>
@@ -113,7 +110,6 @@
 
         function logoutPengawas() {
             window.currentUserPengawas = null;
-            document.getElementById('labelPengawas').innerText = "";
             switchTab('lapor');
             alert("Sesi pengawas berakhir.");
         }
@@ -127,11 +123,10 @@
                     const authData = await res.json();
                     
                     const namaInput = prompt("Masukkan Nama Pengawas:");
-                    if (authData && authData[namaInput]) {
+                    if (authData[namaInput]) {
                         const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
                         if (pinInput === authData[namaInput]) {
                             window.currentUserPengawas = namaInput;
-                            document.getElementById('labelPengawas').innerText = "Pengawas: " + namaInput;
                         } else {
                             alert("❌ PIN Salah!");
                             return;
@@ -233,36 +228,29 @@
 
         function loadPending() {
             const container = document.getElementById('pendingContainer');
-            container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat...</p>';
+            container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
             
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
-                    // FILTER: Hanya tampilkan petugas yang pengawasnya adalah user yang sedang login
-                    const myReports = data.filter(item => {
-                        // Mencocokkan pengawas petugas tersebut dari dataMapping dengan currentUser
-                        return dataMapping[item.petugas] && dataMapping[item.petugas].pengawas === window.currentUserPengawas;
+                    // FILTER: Hanya tampilkan petugas yang nama pengawasnya sesuai dengan pengawas yang login
+                    const filteredData = data.filter(item => {
+                        const detailPetugas = dataMapping[item.petugas];
+                        return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
                     });
 
-                    if (myReports.length === 0) {
-                        container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending untuk petugas Anda.</p>';
-                        return;
-                    }
-
-                    container.innerHTML = '';
-                    myReports.forEach(item => {
+                    container.innerHTML = filteredData.length === 0 ? 
+                        '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending untuk wilayah Anda.</p>' : '';
+                    
+                    filteredData.forEach(item => {
                         container.innerHTML += `
-                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-green-600 shadow-sm text-xs space-y-2">
-                                <div class="flex justify-between items-start">
-                                    <p class="font-bold text-gray-800">${item.petugas}</p>
-                                    <span class="text-[9px] text-gray-400 italic">${new Date(item.waktu).toLocaleTimeString()}</span>
-                                </div>
-                                <p class="text-green-700 font-medium">${item.lokasi}</p>
-                                <p class="text-gray-500 italic bg-white p-2 rounded border border-gray-100">"${item.catatan || '-'}"</p>
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs space-y-2">
+                                <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
+                                <p class="text-gray-500 italic">"${item.catatan}"</p>
                                 <div class="flex space-x-2 pt-1">
-                                    <a href="${item.foto}" target="_blank" class="flex-1 bg-blue-500 text-white text-center py-2 rounded-lg font-bold text-[10px]">LIHAT FOTO</a>
-                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="flex-1 bg-green-600 text-white py-2 rounded-lg font-bold text-[10px]">SETUJU</button>
-                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="flex-1 bg-red-500 text-white py-2 rounded-lg font-bold text-[10px]">TOLAK</button>
+                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">LIHAT FOTO</a>
+                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">SETUJU</button>
+                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">TOLAK</button>
                                 </div>
                             </div>`;
                     });
@@ -281,7 +269,7 @@
 
             fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
                 .then(() => {
-                    alert("Berhasil memproses laporan!");
+                    alert("Berhasil!");
                     loadPending();
                 });
         }
