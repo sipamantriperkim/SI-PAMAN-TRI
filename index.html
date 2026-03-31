@@ -13,7 +13,7 @@
         .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
         .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         /* Style Checkbox agar mudah ditekan di HP */
-        .cb-label { display: flex; items-center: center; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.75rem; cursor: pointer; transition: 0.2s; background: white; }
+        .cb-label { display: flex; align-items: center; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 0.75rem; cursor: pointer; transition: 0.2s; background: white; }
         .cb-label:has(input:checked) { border-color: var(--primary); background-color: #f0fdf4; }
     </style>
 </head>
@@ -92,7 +92,7 @@
 
                 <div>
                     <label class="block text-[10px] font-bold text-gray-500 mb-1">CATATAN TAMBAHAN (OPSIONAL)</label>
-                    <textarea id="catatan_manual" rows="2" placeholder="..." class="w-full p-3 text-xs border-2 border-gray-100 rounded-xl bg-gray-50 outline-none focus:border-green-500"></textarea>
+                    <textarea id="catatan_manual" rows="2" placeholder="Tuliskan info tambahan jika ada..." class="w-full p-3 text-xs border-2 border-gray-100 rounded-xl bg-gray-50 outline-none focus:border-green-500"></textarea>
                 </div>
 
                 <input type="hidden" id="gps">
@@ -109,7 +109,7 @@
         </div>
 
         <div id="sectionVerif" class="hidden p-6">
-            <div id="pendingContainer" class="space-y-3 text-center italic text-gray-400">Memuat...</div>
+            <div id="pendingContainer" class="space-y-3 text-center italic text-gray-400">Memuat data verifikasi...</div>
         </div>
 
         <footer class="text-center py-6 text-gray-400 text-[10px] mt-auto">
@@ -126,6 +126,7 @@
 
         let dataMapping = {};
 
+        // 1. Inisialisasi Data & GPS
         window.onload = function() {
             fetch(scriptURL).then(res => res.json()).then(data => {
                 dataMapping = data;
@@ -135,7 +136,8 @@
                     o.value = o.text = n;
                     selectPetugas.add(o);
                 });
-            });
+            }).catch(e => console.error("Error Load Data:", e));
+
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(p => {
                     document.getElementById('gps').value = p.coords.latitude + "," + p.coords.longitude;
@@ -143,6 +145,7 @@
             }
         };
 
+        // 2. Filter Lokasi Berdasarkan Petugas
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Lokasi --</option>';
             if (this.value && dataMapping[this.value]) {
@@ -155,17 +158,22 @@
             }
         });
 
+        // 3. Proses Kirim Laporan
         form.addEventListener('submit', e => {
             e.preventDefault();
-            btn.disabled = true;
-            btn.innerHTML = "Sabar, sedang mengirim...";
-
-            // LOGIKA PENTING: Mengambil teks kegiatan agar sama dengan filter PDF
+            
             const checkedBoxes = Array.from(document.querySelectorAll('input[name="kegiatan"]:checked'));
+            if (checkedBoxes.length === 0) {
+                alert("Pilih minimal satu jenis kegiatan!");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = "Sedang Mengirim...";
+
+            // Gabungkan teks kegiatan untuk sinkronisasi PDF
             const listKegiatan = checkedBoxes.map(cb => cb.value).join(", ");
             const catatanManual = document.getElementById('catatan_manual').value;
-            
-            // Gabungkan teks (Teks ini yang akan difilter oleh Skrip PDF Anda)
             const catatanFinal = listKegiatan + (catatanManual ? " | Tambahan: " + catatanManual : "");
 
             const file = document.getElementById('foto').files[0];
@@ -176,7 +184,7 @@
                 const params = {
                     petugas: selectPetugas.value,
                     lokasi: selectLokasi.value,
-                    catatan: catatanFinal, // Data yang sudah diformat
+                    catatan: catatanFinal,
                     gps: document.getElementById('gps').value,
                     pengawas: document.getElementById('pengawasOtomatis').value
                 };
@@ -185,27 +193,36 @@
                     method: 'POST',
                     body: JSON.stringify({ bytes: bytes, mimeType: file.type })
                 })
-                .then(() => {
+                .then(res => res.json())
+                .then(data => {
                     document.getElementById('successMessage').classList.remove('hidden');
                     form.reset();
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                     setTimeout(() => document.getElementById('successMessage').classList.add('hidden'), 5000);
                 })
-                .catch(() => {
-                    alert("Error! Cek koneksi.");
+                .catch(err => {
+                    alert("Gagal terhubung ke server. Cek koneksi Anda.");
                     btn.disabled = false;
+                    btn.innerHTML = "KIRIM LAPORAN";
                 });
             };
-            reader.readAsDataURL(file);
+
+            if(file) {
+                reader.readAsDataURL(file);
+            } else {
+                alert("Harap ambil foto pekerjaan!");
+                btn.disabled = false;
+            }
         });
 
+        // 4. Navigasi Tab
         function switchTab(m) {
             const isL = m === 'lapor';
             document.getElementById('sectionLapor').classList.toggle('hidden', !isL);
             document.getElementById('sectionVerif').classList.toggle('hidden', isL);
-            document.getElementById('tabLaporBtn').className = isL ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-            document.getElementById('tabVerifBtn').className = !isL ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            document.getElementById('tabLaporBtn').className = isL ? 'flex-1 py-2 text-xs rounded-lg tab-active text-center' : 'flex-1 py-2 text-xs rounded-lg text-gray-500 text-center';
+            document.getElementById('tabVerifBtn').className = !isL ? 'flex-1 py-2 text-xs rounded-lg tab-active text-center' : 'flex-1 py-2 text-xs rounded-lg text-gray-500 text-center';
         }
     </script>
 </body>
