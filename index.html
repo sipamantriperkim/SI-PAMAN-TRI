@@ -61,14 +61,12 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Kegiatan Pekerjaan</label>
                     <select id="catatan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
                         <option value="">-- Pilih Jenis Kegiatan --</option>
-                        <option value="Mencabut Rumput">Mencabut Rumput</option>
-                        <option value="Menanam Tanaman">Menanam Tanaman</option>
-                        <option value="Menyapu Taman">Menyapu Taman</option>
-                        <option value="Membersihkan Sampah">Membersihkan Sampah</option>
-                        <option value="Memotong Rumput">Memotong Rumput</option>
-                        <option value="Memangkas Pohon">Memangkas Pohon</option>
-                        <option value="Menyiram Tanaman">Menyiram Tanaman</option>
-                        <option value="Memupuk Tanaman">Memupuk Tanaman</option>
+                        <option value="PEMELIHARAAN KAWASAN TUGU, TAMAN, MEDIAN DAN JALUR HIJAU">Pemeliharaan Kawasan</option>
+                        <option value="PEMBERSIHAN SAMPAH DAN KOTORAN KAWASAN TAMAN, TUGU, MEDIAN DAN JALUR HIJAU">Pembersihan Sampah</option>
+                        <option value="PEMANGKASAN DAN PEMOTONGAN RUMPUT, KEMBANG ATAU BUNGA DAN TANAMAN PADA KAWASAN TAMAN, TUGU MEDIAN DAN JALUR HIJAU">Pemangkasan/Pemotongan</option>
+                        <option value="PENYIRAMAN KEMBANG/BUNGA, POHON DAN TANAMAN PADA KAWASAN TAMAN, TUGU, MEDIAN DAN JALUR HIJAU">Penyiraman</option>
+                        <option value="PEMUPUKAN TANAMAN BUNGA, POHON DAN TANAMAN LAINNYA PADA KAWASAN TAMAN, TUGU, MEDIAN DAN JALUR HIJAU">Pemupukan</option>
+                        <option value="PERAWATAN DAN PEMELIHARAAN FASILITAS PEMERINTAH DAERAH">Perawatan Fasilitas</option>
                         <option value="Lainnya...">Lainnya...</option>
                     </select>
                     <input type="text" id="catatanTambahan" placeholder="Sebutkan kegiatan lainnya..." 
@@ -107,7 +105,8 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxKvfBFpT-pDG72vQHW5YwRtKMU82UcA12DR635Pw9J3dMJLuCBzQ-Nc_IIu8DlD1KzEQ/exec';
+        // PASTIKAN URL INI ADALAH URL TERBARU SETELAH DEPLOY ULANG APPS SCRIPT
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwdVFX-ntJe8ittFfBJBuJz7EszpLuTTXLDBwMi80-b3VGNWy42-LnDushqM05Ey7C7/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -122,7 +121,6 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // Logika munculkan input tambahan jika pilih "Lainnya..."
         selectCatatan.addEventListener('change', function() {
             if (this.value === 'Lainnya...') {
                 inputCatatanTambahan.classList.remove('hidden');
@@ -218,35 +216,37 @@
             reader.onload = function() {
                 const bytes = reader.result.split(',')[1];
                 
-                // Gabungkan pilihan dropdown + teks tambahan jika ada
                 let catatanFinal = selectCatatan.value;
                 if (catatanFinal === 'Lainnya...') {
-                    catatanFinal = "Lainnya: " + inputCatatanTambahan.value;
+                    catatanFinal = inputCatatanTambahan.value;
                 }
 
+                // Penyesuaian Parameter agar cocok dengan doPost Google Apps Script
                 const params = {
                     petugas: selectPetugas.value,
                     lokasi: selectLokasi.value,
                     catatan: catatanFinal,
-                    gps: document.getElementById('gps').value,
-                    pengawas: inputPengawas.value
+                    gps: document.getElementById('gps').value || "-",
+                    pengawas: inputPengawas.value || "-"
                 };
+                
                 const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
 
                 fetch(finalUrl, {
                     method: 'POST',
                     body: JSON.stringify({ bytes: bytes, mimeType: file.type })
                 })
-                .then(() => {
+                .then(response => response.text())
+                .then(result => {
                     successMsg.classList.remove('hidden');
                     form.reset();
-                    inputCatatanTambahan.classList.add('hidden'); // Sembunyikan lagi input tambahan
+                    inputCatatanTambahan.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                     setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
                 })
-                .catch(() => {
-                    status.innerHTML = "❌ Gagal Mengirim.";
+                .catch(err => {
+                    alert("Gagal Mengirim: " + err);
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                 });
