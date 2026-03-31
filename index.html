@@ -58,22 +58,9 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kegiatan Pekerjaan</label>
-                    <select id="catatan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                        <option value="">-- Pilih Jenis Kegiatan --</option>
-                        <option value="PEMELIHARAAN KAWASAN TUGU, TAMAN, MEDIAN DAN JALUR HIJAU">Mencabut Rumput</option>
-                        <option value="PEMELIHARAAN KAWASAN TUGU, TAMAN, MEDIAN DAN JALUR HIJAU">Menanam Tanaman</option>
-                        <option value="PEMBERSIHAN SAMPAH DAN KOTORAN KAWASAN TAMAN, TUGU, MEDIAN DAN JALUR HIJAU">Menyapu Taman</option>
-                        <option value="PEMBERSIHAN SAMPAH DAN KOTORAN KAWASAN TAMAN, TUGU, MEDIAN DAN JALUR HIJAU">Membersihkan Sampah</option>
-                        <option value="PEMANGKASAN DAN PEMOTONGAN RUMPUT, KEMBANG ATAU BUNGA DAN TANAMAN PADA KAWASAN TAMAN, TUGU MEDIAN DAN JALUR HIJAU">Memotong Rumput</option>
-                        <option value="PEMANGKASAN DAN PEMOTONGAN RUMPUT, KEMBANG ATAU BUNGA DAN TANAMAN PADA KAWASAN TAMAN, TUGU MEDIAN DAN JALUR HIJAU">Memangkas Pohon</option>
-                        <option value="PENYIRAMAN KEMBANG/BUNGA, POHON DAN TANAMAN PADA KAWASAN TAMAN, TUGU, MEDIAN DAN JALUR HIJAU">Menyiram Tanaman</option>
-                        <option value="PEMUPUKAN TANAMAN BUNGA, POHON DAN TANAMAN LAINNYA PADA KAWASAN TAMAN, TUGU, MEDIAN DAN JALUR HIJAU">Memupuk Tanaman</option>
-                        <option value="PERAWATAN DAN PEMELIHARAAN FASILITAS PEMERINTAH DAERAH">Gotong Royong</option>
-                        <option value="LAINNYA">Lainnya...</option>
-                    </select>
-                    <input type="text" id="catatanTambahan" placeholder="Sebutkan kegiatan lainnya..." 
-                        class="hidden mt-2 w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-yellow-50 text-sm italic">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan Pekerjaan</label>
+                    <textarea id="catatan" rows="3" placeholder="Contoh: Menyapu taman, memangkas dahan mati..." 
+                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50"></textarea>
                 </div>
 
                 <input type="hidden" id="gps">
@@ -108,31 +95,18 @@
     </div>
 
     <script>
-        // PASTIKAN URL INI ADALAH URL TERBARU SETELAH DEPLOY ULANG APPS SCRIPT
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwqL6vTnDu4kF0df-u4e0luQCqiCLu5ltVqsRTwtP1JtWljOfoW69ehovqz9PIrgMev/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbz1eLRqVBG63zVrYrFkvHy05dHJXFtQzt1MZGt3z7sDVZBKMWx7PF9Au72Yrk2J7bumHQ/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
         const selectPetugas = document.getElementById('petugas');
         const selectLokasi = document.getElementById('lokasi');
-        const selectCatatan = document.getElementById('catatan');
-        const inputCatatanTambahan = document.getElementById('catatanTambahan');
         const inputPengawas = document.getElementById('pengawasOtomatis');
         const successMsg = document.getElementById('successMessage');
 
         let dataMapping = {}; 
         window.currentUserPengawas = null;
-
-        selectCatatan.addEventListener('change', function() {
-            if (this.value === 'Lainnya...') {
-                inputCatatanTambahan.classList.remove('hidden');
-                inputCatatanTambahan.required = true;
-            } else {
-                inputCatatanTambahan.classList.add('hidden');
-                inputCatatanTambahan.required = false;
-            }
-        });
 
         function logoutPengawas() {
             window.currentUserPengawas = null;
@@ -142,10 +116,12 @@
 
         async function switchTab(mode) {
             const isLapor = mode === 'lapor';
+            
             if (!isLapor && !window.currentUserPengawas) {
                 try {
                     const res = await fetch(scriptURL + "?action=getAuthPengawas");
                     const authData = await res.json();
+                    
                     const namaInput = prompt("Masukkan Nama Pengawas:");
                     if (authData[namaInput]) {
                         const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
@@ -164,10 +140,13 @@
                     return;
                 }
             }
+
             document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
             document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
+            
             document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
             document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+
             if (!isLapor) loadPending();
         }
 
@@ -218,38 +197,28 @@
 
             reader.onload = function() {
                 const bytes = reader.result.split(',')[1];
-                
-                let catatanFinal = selectCatatan.value;
-                if (catatanFinal === 'Lainnya...') {
-                    catatanFinal = inputCatatanTambahan.value;
-                }
-
-                // Penyesuaian Parameter agar cocok dengan doPost Google Apps Script
                 const params = {
                     petugas: selectPetugas.value,
                     lokasi: selectLokasi.value,
-                    catatan: catatanFinal,
-                    gps: document.getElementById('gps').value || "-",
-                    pengawas: inputPengawas.value || "-"
+                    catatan: document.getElementById('catatan').value,
+                    gps: document.getElementById('gps').value,
+                    pengawas: inputPengawas.value
                 };
-                
                 const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
 
                 fetch(finalUrl, {
                     method: 'POST',
                     body: JSON.stringify({ bytes: bytes, mimeType: file.type })
                 })
-                .then(response => response.text())
-                .then(result => {
+                .then(() => {
                     successMsg.classList.remove('hidden');
                     form.reset();
-                    inputCatatanTambahan.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                     setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
                 })
-                .catch(err => {
-                    alert("Gagal Mengirim: " + err);
+                .catch(() => {
+                    status.innerHTML = "❌ Gagal Mengirim.";
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                 });
@@ -260,15 +229,19 @@
         function loadPending() {
             const container = document.getElementById('pendingContainer');
             container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
+            
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
+                    // FILTER: Hanya tampilkan petugas yang nama pengawasnya sesuai dengan pengawas yang login
                     const filteredData = data.filter(item => {
                         const detailPetugas = dataMapping[item.petugas];
                         return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
                     });
+
                     container.innerHTML = filteredData.length === 0 ? 
                         '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending untuk wilayah Anda.</p>' : '';
+                    
                     filteredData.forEach(item => {
                         container.innerHTML += `
                             <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs space-y-2">
@@ -293,6 +266,7 @@
                 switchTab('lapor');
                 return;
             }
+
             fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
                 .then(() => {
                     alert("Berhasil!");
