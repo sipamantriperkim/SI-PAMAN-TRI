@@ -14,10 +14,6 @@
         .loader { border-top-color: #ffffff; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        /* Style tambahan untuk checkbox agar lebih besar dan mudah diklik di HP */
-        .checkbox-item { display: flex; align-items: center; padding: 10px; background: #f9fafb; border-radius: 12px; border: 2px solid #e5e7eb; transition: 0.2s; cursor: pointer; }
-        .checkbox-item:has(input:checked) { border-color: var(--secondary); background: #f0fdf4; }
-        input[type="checkbox"] { width: 20px; height: 20px; accent-color: var(--primary); }
     </style>
 </head>
 <body class="font-sans antialiased text-gray-900">
@@ -56,56 +52,14 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih Kegiatan Hari Ini</label>
-                    <div id="kegiatanContainer" class="grid grid-cols-1 gap-2">
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Mencabut Rumput" class="mr-3">
-                            <span class="text-xs">Mencabut Rumput</span>
-                            </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Menanam Tanaman" class="mr-3">
-                            <span class="text-xs">Menanam Tanaman</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Menyapu Taman" class="mr-3">
-                            <span class="text-xs">Menyapu Taman</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Membersihkan Sampah" class="mr-3">
-                            <span class="text-xs">Membersihkan Sampah</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Memotong Rumput" class="mr-3">
-                            <span class="text-xs">Memotong Rumput</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Memangkas Pohon" class="mr-3">
-                            <span class="text-xs">Memangkas Pohon</span>
-                        </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Menyiram Tanaman" class="mr-3">
-                            <span class="text-xs">Menyiram Tanaman</span>
-                            </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Memupuk Tanaman" class="mr-3">
-                            <span class="text-xs">Memupuk Tanaman</span>
-                            </label>
-                        <label class="checkbox-item">
-                            <input type="checkbox" name="kegiatan" value="Gotong Royong" class="mr-3">
-                            <span class="text-xs">Gotong Royong</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
                     <input type="file" id="foto" accept="image/*" capture="environment" required 
                         class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan Tambahan (Opsional)</label>
-                    <textarea id="catatan" rows="2" placeholder="Informasi tambahan jika ada..." 
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan Pekerjaan</label>
+                    <textarea id="catatan" rows="3" placeholder="Contoh: Menyapu taman, memangkas dahan mati..." 
                         class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50"></textarea>
                 </div>
 
@@ -141,7 +95,7 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzoC0MMiDXNkZkEZIZKBDGepbhGt0Wnd-sIlr80hr4qQR_Wp6g7SYOlT0-tuM4UkAspng/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbz1eLRqVBG63zVrYrFkvHy05dHJXFtQzt1MZGt3z7sDVZBKMWx7PF9Au72Yrk2J7bumHQ/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -234,19 +188,6 @@
 
         form.addEventListener('submit', e => {
             e.preventDefault();
-
-            // Ambil semua kegiatan yang diceklis
-            const checkboxes = document.querySelectorAll('input[name="kegiatan"]:checked');
-            if (checkboxes.length === 0) {
-                alert("Silakan pilih minimal satu kegiatan!");
-                return;
-            }
-            
-            const kegiatanTerpilih = Array.from(checkboxes).map(cb => cb.value).join(", ");
-            const catatanTambahan = document.getElementById('catatan').value;
-            // Gabungkan ceklis dan catatan untuk dikirim ke kolom "Catatan/Kegiatan" di Sheet
-            const deskripsiLengkap = `KEGIATAN: ${kegiatanTerpilih} | CATATAN: ${catatanTambahan || '-'}`;
-
             btn.disabled = true;
             btn.innerHTML = `<span>Mengirim...</span>`;
             successMsg.classList.add('hidden'); 
@@ -259,7 +200,7 @@
                 const params = {
                     petugas: selectPetugas.value,
                     lokasi: selectLokasi.value,
-                    catatan: deskripsiLengkap, // Mengirim data gabungan
+                    catatan: document.getElementById('catatan').value,
                     gps: document.getElementById('gps').value,
                     pengawas: inputPengawas.value
                 };
@@ -285,23 +226,27 @@
             reader.readAsDataURL(file);
         });
 
-        // Fungsi loadPending dan doVerify tetap sama
         function loadPending() {
             const container = document.getElementById('pendingContainer');
             container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
+            
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
+                    // FILTER: Hanya tampilkan petugas yang nama pengawasnya sesuai dengan pengawas yang login
                     const filteredData = data.filter(item => {
                         const detailPetugas = dataMapping[item.petugas];
                         return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
                     });
-                    container.innerHTML = filteredData.length === 0 ? '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending.</p>' : '';
+
+                    container.innerHTML = filteredData.length === 0 ? 
+                        '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending untuk wilayah Anda.</p>' : '';
+                    
                     filteredData.forEach(item => {
                         container.innerHTML += `
                             <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs space-y-2">
                                 <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
-                                <p class="text-gray-500 italic">${item.catatan}</p>
+                                <p class="text-gray-500 italic">"${item.catatan}"</p>
                                 <div class="flex space-x-2 pt-1">
                                     <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">LIHAT FOTO</a>
                                     <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">SETUJU</button>
@@ -309,12 +254,24 @@
                                 </div>
                             </div>`;
                     });
+                })
+                .catch(() => {
+                    container.innerHTML = '<p class="text-center text-red-400 py-10">Gagal memuat data.</p>';
                 });
         }
 
         function doVerify(rowId, status) {
+            if (!window.currentUserPengawas) {
+                alert("Sesi berakhir, silakan login kembali.");
+                switchTab('lapor');
+                return;
+            }
+
             fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
-                .then(() => { alert("Berhasil!"); loadPending(); });
+                .then(() => {
+                    alert("Berhasil!");
+                    loadPending();
+                });
         }
     </script>
 </body>
