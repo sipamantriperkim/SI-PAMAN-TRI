@@ -127,7 +127,46 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // Logika untuk menampilkan input manual jika pilih "Lainnya..."
+        // --- FUNGSI KOMPRESI FOTO OTOMATIS ---
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Maksimal dimensi 1000px agar tidak terlalu berat di server
+                        const maxSide = 1000;
+                        if (width > height) {
+                            if (width > maxSide) {
+                                height *= maxSide / width;
+                                width = maxSide;
+                            }
+                        } else {
+                            if (height > maxSide) {
+                                width *= maxSide / height;
+                                height = maxSide;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Kompresi ke kualitas 0.7 (70%) JPG
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(dataUrl.split(',')[1]); 
+                    };
+                };
+            });
+        }
+
         selectPekerjaan.addEventListener('change', function() {
             if (this.value === "Lainnya...") {
                 wrapperLainnya.classList.remove('hidden');
@@ -147,12 +186,10 @@
 
         async function switchTab(mode) {
             const isLapor = mode === 'lapor';
-            
             if (!isLapor && !window.currentUserPengawas) {
                 try {
                     const res = await fetch(scriptURL + "?action=getAuthPengawas");
                     const authData = await res.json();
-                    
                     const namaInput = prompt("Masukkan Nama Pengawas:");
                     if (authData[namaInput]) {
                         const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
@@ -171,13 +208,10 @@
                     return;
                 }
             }
-
             document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
             document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
-            
             document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
             document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-
             if (!isLapor) loadPending();
         }
 
@@ -217,19 +251,18 @@
             }
         });
 
-        form.addEventListener('submit', e => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btn.disabled = true;
             btn.innerHTML = `<span>Mengirim...</span>`;
             successMsg.classList.add('hidden'); 
 
             const file = document.getElementById('foto').files[0];
-            const reader = new FileReader();
-
-            reader.onload = function() {
-                const bytes = reader.result.split(',')[1];
+            
+            try {
+                // Proses kompresi sebelum kirim
+                const bytes = await compressImage(file);
                 
-                // Logika penentuan catatan (Dropdown atau Manual)
                 let isiCatatan = selectPekerjaan.value;
                 if (isiCatatan === "Lainnya...") {
                     isiCatatan = catatanManual.value;
@@ -245,25 +278,24 @@
                 
                 const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
 
-                fetch(finalUrl, {
+                const response = await fetch(finalUrl, {
                     method: 'POST',
-                    body: JSON.stringify({ bytes: bytes, mimeType: file.type })
-                })
-                .then(() => {
+                    body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
+                });
+
+                if (response.ok) {
                     successMsg.classList.remove('hidden');
                     form.reset();
-                    wrapperLainnya.classList.add('hidden'); // Reset tampilan input manual
+                    wrapperLainnya.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                     setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
-                })
-                .catch(() => {
-                    status.innerHTML = "❌ Gagal Mengirim.";
-                    btn.disabled = false;
-                    btn.innerHTML = "KIRIM LAPORAN";
-                });
-            };
-            reader.readAsDataURL(file);
+                }
+            } catch (err) {
+                status.innerHTML = "❌ Gagal Mengirim: " + err;
+                btn.disabled = false;
+                btn.innerHTML = "KIRIM LAPORAN";
+            }
         });
 
         function loadPending() {
