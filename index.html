@@ -51,12 +51,6 @@
                     </select>
                 </div>
 
-                <div id="wrapperLokasiLainnya" class="hidden">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Ketik Lokasi Baru</label>
-                    <input type="text" id="lokasiManual" placeholder="Sebutkan lokasi taman/kawasan..." 
-                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                </div>
-
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
                     <input type="file" id="foto" accept="image/*" capture="environment" required 
@@ -117,15 +111,13 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxKqCfIvsAZW3PMNDy7a-FCNM7BEJLtfi9ltsOaF7pmbcnXJh19aYSjKAzkLQCFs-wqnQ/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbykefP5BH8q7bjQkzal_4NQvTVeR9xst2wec0l-s2pz6p_iHg841Y4Qd133GIF2xES-qg/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
         const status = document.getElementById('status');
         const selectPetugas = document.getElementById('petugas');
         const selectLokasi = document.getElementById('lokasi');
-        const wrapperLokasiLainnya = document.getElementById('wrapperLokasiLainnya');
-        const lokasiManual = document.getElementById('lokasiManual');
         const selectPekerjaan = document.getElementById('pilihanPekerjaan');
         const wrapperLainnya = document.getElementById('wrapperLainnya');
         const catatanManual = document.getElementById('catatanManual');
@@ -135,7 +127,7 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // --- FUNGSI KOMPRESI FOTO ---
+        // --- FUNGSI KOMPRESI FOTO OTOMATIS ---
         async function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -147,34 +139,33 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
+
+                        // Maksimal dimensi 1000px agar tidak terlalu berat di server
                         const maxSide = 1000;
                         if (width > height) {
-                            if (width > maxSide) { height *= maxSide / width; width = maxSide; }
+                            if (width > maxSide) {
+                                height *= maxSide / width;
+                                width = maxSide;
+                            }
                         } else {
-                            if (height > maxSide) { width *= maxSide / height; height = maxSide; }
+                            if (height > maxSide) {
+                                width *= maxSide / height;
+                                height = maxSide;
+                            }
                         }
+
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Kompresi ke kualitas 0.7 (70%) JPG
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                         resolve(dataUrl.split(',')[1]); 
                     };
                 };
             });
         }
-
-        // --- LOGIKA TAMPILAN LAINNYA ---
-        selectLokasi.addEventListener('change', function() {
-            if (this.value === "Lainnya...") {
-                wrapperLokasiLainnya.classList.remove('hidden');
-                lokasiManual.setAttribute('required', 'true');
-            } else {
-                wrapperLokasiLainnya.classList.add('hidden');
-                lokasiManual.removeAttribute('required');
-                lokasiManual.value = "";
-            }
-        });
 
         selectPekerjaan.addEventListener('change', function() {
             if (this.value === "Lainnya...") {
@@ -256,11 +247,6 @@
                     opt.value = opt.text = loc;
                     selectLokasi.add(opt);
                 });
-                // TAMBAHKAN OPSI LAINNYA DI AKHIR
-                const optLain = document.createElement('option');
-                optLain.value = optLain.text = "Lainnya...";
-                selectLokasi.add(optLain);
-                
                 inputPengawas.value = dataMapping[this.value].pengawas || "-";
             }
         });
@@ -274,15 +260,9 @@
             const file = document.getElementById('foto').files[0];
             
             try {
+                // Proses kompresi sebelum kirim
                 const bytes = await compressImage(file);
                 
-                // Ambil Lokasi
-                let finalLokasi = selectLokasi.value;
-                if (finalLokasi === "Lainnya...") {
-                    finalLokasi = lokasiManual.value;
-                }
-
-                // Ambil Pekerjaan
                 let isiCatatan = selectPekerjaan.value;
                 if (isiCatatan === "Lainnya...") {
                     isiCatatan = catatanManual.value;
@@ -290,7 +270,7 @@
 
                 const params = {
                     petugas: selectPetugas.value,
-                    lokasi: finalLokasi,
+                    lokasi: selectLokasi.value,
                     catatan: isiCatatan,
                     gps: document.getElementById('gps').value,
                     pengawas: inputPengawas.value
@@ -307,7 +287,6 @@
                     successMsg.classList.remove('hidden');
                     form.reset();
                     wrapperLainnya.classList.add('hidden');
-                    wrapperLokasiLainnya.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                     setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
