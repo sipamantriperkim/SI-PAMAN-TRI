@@ -61,6 +61,11 @@
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
                     <input type="file" id="foto" accept="image/*" capture="environment" required 
                         class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
+                    
+                    <div id="previewContainer" class="hidden mt-3 p-2 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center">
+                        <p class="text-[10px] text-gray-400 mb-1 uppercase font-bold">Hasil Tangkapan Kamera:</p>
+                        <img id="imagePreview" src="" class="max-h-48 rounded-lg shadow-md border border-white">
+                    </div>
                 </div>
 
                 <div>
@@ -131,9 +136,27 @@
         const catatanManual = document.getElementById('catatanManual');
         const inputPengawas = document.getElementById('pengawasOtomatis');
         const successMsg = document.getElementById('successMessage');
+        const inputFoto = document.getElementById('foto');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
 
         let dataMapping = {}; 
         window.currentUserPengawas = null;
+
+        // LOGIKA BARU: MENAMPILKAN PRATINJAU FOTO
+        inputFoto.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.classList.add('hidden');
+            }
+        });
 
         async function compressImage(file) {
             return new Promise((resolve) => {
@@ -163,7 +186,6 @@
             });
         }
 
-        // LOGIKA DETEKSI PILIHAN LOKASI
         selectLokasi.addEventListener('change', function() {
             if (this.value === "Lainnya..." || this.value === "LAINNYA") {
                 wrapperLokasiLainnya.classList.remove('hidden');
@@ -236,27 +258,22 @@
             }
         };
 
-        // --- UPDATE LOGIKA DROPDOWN LOKASI (ALFABET + LAINNYA DI BAWAH) ---
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
             inputPengawas.value = "";
             
             if (this.value && dataMapping[this.value]) {
                 let daftarAsli = dataMapping[this.value].lokasi;
-
-                // Ambil semua kecuali "Lainnya..."
                 let lokasiTaman = daftarAsli.filter(loc => {
                     return loc.trim() !== "Lainnya..." && loc.trim() !== "LAINNYA";
                 });
 
-                // Urutkan A-Z lalu tambahkan ke dropdown
                 lokasiTaman.sort().forEach(loc => {
                     const opt = document.createElement('option');
                     opt.value = opt.text = loc;
                     selectLokasi.add(opt);
                 });
 
-                // Tambahkan "Lainnya..." secara manual di baris paling akhir
                 const optLainnya = document.createElement('option');
                 optLainnya.value = optLainnya.text = "Lainnya...";
                 selectLokasi.add(optLainnya);
@@ -270,7 +287,7 @@
             btn.disabled = true;
             btn.innerHTML = `<span>Mengirim...</span>`;
             
-            const file = document.getElementById('foto').files[0];
+            const file = inputFoto.files[0];
             
             try {
                 const bytes = await compressImage(file);
@@ -296,6 +313,7 @@
                 if (response.ok) {
                     successMsg.classList.remove('hidden');
                     form.reset();
+                    previewContainer.classList.add('hidden'); // Sembunyikan preview setelah kirim
                     wrapperLainnya.classList.add('hidden');
                     wrapperLokasiLainnya.classList.add('hidden');
                     btn.disabled = false;
