@@ -51,6 +51,12 @@
                     </select>
                 </div>
 
+                <div id="wrapperLokasiLainnya" class="hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1 italic text-green-700">Tulis Nama Lokasi Baru:</label>
+                    <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi di sini..." 
+                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm border-green-200">
+                </div>
+
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
                     <input type="file" id="foto" accept="image/*" capture="environment" required 
@@ -120,6 +126,8 @@
         const selectLokasi = document.getElementById('lokasi');
         const selectPekerjaan = document.getElementById('pilihanPekerjaan');
         const wrapperLainnya = document.getElementById('wrapperLainnya');
+        const wrapperLokasiLainnya = document.getElementById('wrapperLokasiLainnya');
+        const lokasiManual = document.getElementById('lokasiManual');
         const catatanManual = document.getElementById('catatanManual');
         const inputPengawas = document.getElementById('pengawasOtomatis');
         const successMsg = document.getElementById('successMessage');
@@ -127,7 +135,6 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // --- FUNGSI KOMPRESI FOTO OTOMATIS ---
         async function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -139,33 +146,36 @@
                         const canvas = document.createElement('canvas');
                         let width = img.width;
                         let height = img.height;
-
-                        // Maksimal dimensi 1000px agar tidak terlalu berat di server
                         const maxSide = 1000;
                         if (width > height) {
-                            if (width > maxSide) {
-                                height *= maxSide / width;
-                                width = maxSide;
-                            }
+                            if (width > maxSide) { height *= maxSide / width; width = maxSide; }
                         } else {
-                            if (height > maxSide) {
-                                width *= maxSide / height;
-                                height = maxSide;
-                            }
+                            if (height > maxSide) { width *= maxSide / height; height = maxSide; }
                         }
-
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        
-                        // Kompresi ke kualitas 0.7 (70%) JPG
                         const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
                         resolve(dataUrl.split(',')[1]); 
                     };
                 };
             });
         }
+
+        // LOGIKA DETEKSI PILIHAN LOKASI
+        selectLokasi.addEventListener('change', function() {
+            // Jika yang dipilih adalah tulisan "Lainnya..." dari Spreadsheet Bapak
+            if (this.value === "Lainnya..." || this.value === "LAINNYA") {
+                wrapperLokasiLainnya.classList.remove('hidden');
+                lokasiManual.setAttribute('required', 'true');
+                lokasiManual.focus();
+            } else {
+                wrapperLokasiLainnya.classList.add('hidden');
+                lokasiManual.removeAttribute('required');
+                lokasiManual.value = "";
+            }
+        });
 
         selectPekerjaan.addEventListener('change', function() {
             if (this.value === "Lainnya...") {
@@ -195,18 +205,9 @@
                         const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
                         if (pinInput === authData[namaInput]) {
                             window.currentUserPengawas = namaInput;
-                        } else {
-                            alert("❌ PIN Salah!");
-                            return;
-                        }
-                    } else {
-                        alert("❌ Nama Pengawas tidak terdaftar!");
-                        return;
-                    }
-                } catch (err) {
-                    alert("Gagal memverifikasi identitas.");
-                    return;
-                }
+                        } else { alert("❌ PIN Salah!"); return; }
+                    } else { alert("❌ Nama Pengawas tidak terdaftar!"); return; }
+                } catch (err) { alert("Gagal memverifikasi identitas."); return; }
             }
             document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
             document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
@@ -227,9 +228,7 @@
                         selectPetugas.add(opt);
                     });
                 })
-                .catch(err => {
-                    status.innerHTML = "Gagal memuat daftar petugas.";
-                });
+                .catch(err => { status.innerHTML = "Gagal memuat daftar petugas."; });
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
@@ -255,22 +254,19 @@
             e.preventDefault();
             btn.disabled = true;
             btn.innerHTML = `<span>Mengirim...</span>`;
-            successMsg.classList.add('hidden'); 
-
+            
             const file = document.getElementById('foto').files[0];
             
             try {
-                // Proses kompresi sebelum kirim
                 const bytes = await compressImage(file);
                 
-                let isiCatatan = selectPekerjaan.value;
-                if (isiCatatan === "Lainnya...") {
-                    isiCatatan = catatanManual.value;
-                }
+                // Ambil nilai akhir (Manual atau Dropdown)
+                let isiLokasi = (selectLokasi.value === "Lainnya..." || selectLokasi.value === "LAINNYA") ? lokasiManual.value : selectLokasi.value;
+                let isiCatatan = selectPekerjaan.value === "Lainnya..." ? catatanManual.value : selectPekerjaan.value;
 
                 const params = {
                     petugas: selectPetugas.value,
-                    lokasi: selectLokasi.value,
+                    lokasi: isiLokasi,
                     catatan: isiCatatan,
                     gps: document.getElementById('gps').value,
                     pengawas: inputPengawas.value
@@ -287,6 +283,7 @@
                     successMsg.classList.remove('hidden');
                     form.reset();
                     wrapperLainnya.classList.add('hidden');
+                    wrapperLokasiLainnya.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                     setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
@@ -301,7 +298,6 @@
         function loadPending() {
             const container = document.getElementById('pendingContainer');
             container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
-            
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
@@ -309,40 +305,25 @@
                         const detailPetugas = dataMapping[item.petugas];
                         return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
                     });
-
-                    container.innerHTML = filteredData.length === 0 ? 
-                        '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending untuk wilayah Anda.</p>' : '';
-                    
+                    container.innerHTML = filteredData.length === 0 ? '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending.</p>' : '';
                     filteredData.forEach(item => {
                         container.innerHTML += `
                             <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs space-y-2">
                                 <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
                                 <p class="text-gray-500 italic">"${item.catatan}"</p>
                                 <div class="flex space-x-2 pt-1">
-                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">LIHAT FOTO</a>
+                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">FOTO</a>
                                     <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">SETUJU</button>
                                     <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">TOLAK</button>
                                 </div>
                             </div>`;
                     });
-                })
-                .catch(() => {
-                    container.innerHTML = '<p class="text-center text-red-400 py-10">Gagal memuat data.</p>';
                 });
         }
 
         function doVerify(rowId, status) {
-            if (!window.currentUserPengawas) {
-                alert("Sesi berakhir, silakan login kembali.");
-                switchTab('lapor');
-                return;
-            }
-
             fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
-                .then(() => {
-                    alert("Berhasil!");
-                    loadPending();
-                });
+                .then(() => { alert("Berhasil!"); loadPending(); });
         }
     </script>
 </body>
