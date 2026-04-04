@@ -165,7 +165,6 @@
 
         // LOGIKA DETEKSI PILIHAN LOKASI
         selectLokasi.addEventListener('change', function() {
-            // Jika yang dipilih adalah tulisan "Lainnya..." dari Spreadsheet Bapak
             if (this.value === "Lainnya..." || this.value === "LAINNYA") {
                 wrapperLokasiLainnya.classList.remove('hidden');
                 lokasiManual.setAttribute('required', 'true');
@@ -237,15 +236,31 @@
             }
         };
 
+        // --- UPDATE LOGIKA DROPDOWN LOKASI (ALFABET + LAINNYA DI BAWAH) ---
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
             inputPengawas.value = "";
+            
             if (this.value && dataMapping[this.value]) {
-                dataMapping[this.value].lokasi.sort().forEach(loc => {
+                let daftarAsli = dataMapping[this.value].lokasi;
+
+                // Ambil semua kecuali "Lainnya..."
+                let lokasiTaman = daftarAsli.filter(loc => {
+                    return loc.trim() !== "Lainnya..." && loc.trim() !== "LAINNYA";
+                });
+
+                // Urutkan A-Z lalu tambahkan ke dropdown
+                lokasiTaman.sort().forEach(loc => {
                     const opt = document.createElement('option');
                     opt.value = opt.text = loc;
                     selectLokasi.add(opt);
                 });
+
+                // Tambahkan "Lainnya..." secara manual di baris paling akhir
+                const optLainnya = document.createElement('option');
+                optLainnya.value = optLainnya.text = "Lainnya...";
+                selectLokasi.add(optLainnya);
+
                 inputPengawas.value = dataMapping[this.value].pengawas || "-";
             }
         });
@@ -260,7 +275,6 @@
             try {
                 const bytes = await compressImage(file);
                 
-                // Ambil nilai akhir (Manual atau Dropdown)
                 let isiLokasi = (selectLokasi.value === "Lainnya..." || selectLokasi.value === "LAINNYA") ? lokasiManual.value : selectLokasi.value;
                 let isiCatatan = selectPekerjaan.value === "Lainnya..." ? catatanManual.value : selectPekerjaan.value;
 
