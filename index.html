@@ -57,7 +57,7 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
-                    <input type="file" id="foto" accept="image/*" capture="environment" required 
+                    <input type="file" id="foto" name="fotoFile" accept="image/*" capture="environment" required 
                         class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
                     
                     <div id="previewContainer" class="hidden mt-3 p-2 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center">
@@ -117,6 +117,7 @@
 
         let dataMapping = {}; 
 
+        // Preview Foto
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -129,6 +130,7 @@
             }
         });
 
+        // Load Data Awal
         window.onload = function() {
             fetch(scriptURL)
                 .then(res => res.json())
@@ -148,6 +150,7 @@
                 .catch(err => status.innerHTML = "❌ Gagal memuat data.");
         };
 
+        // Event Listeners Dropdowns
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi --</option>';
             if (this.value && dataMapping[this.value]) {
@@ -166,22 +169,38 @@
             wrapperPekerjaanLainnya.classList.toggle('hidden', this.value !== "Lainnya...");
         });
 
+        // Pengiriman Form
         form.addEventListener('submit', e => {
             e.preventDefault();
             btn.disabled = true;
-            btn.innerHTML = "Mengirim...";
+            btn.innerHTML = "⏳ Mengirim...";
 
-            const formData = new FormData(form);
-            
-            if(selectLokasi.value === "Lainnya...") formData.set('lokasiTaman', document.getElementById('lokasiManual').value);
-            if(selectPekerjaan.value === "Lainnya...") formData.set('jenisPekerjaan', document.getElementById('catatanManual').value);
-
+            const file = inputFoto.files[0];
             const reader = new FileReader();
-            reader.readAsDataURL(inputFoto.files[0]);
-            reader.onload = () => {
-                formData.append('fotoUrl', reader.result);
+            
+            reader.onload = function() {
+                const base64Data = reader.result.split(',')[1]; // Ambil data murni base64
                 
-                fetch(scriptURL, { method: 'POST', body: formData })
+                // Menyiapkan data yang akan dikirim (URLSearchParams lebih stabil untuk POST sederhana)
+                const payload = new URLSearchParams();
+                payload.append('namaPetugas', selectPetugas.value);
+                
+                // Cek jika lokasi manual diisi
+                const lokasiFinal = (selectLokasi.value === "Lainnya...") ? document.getElementById('lokasiManual').value : selectLokasi.value;
+                payload.append('lokasiTaman', lokasiFinal);
+                
+                // Cek jika pekerjaan manual diisi
+                const pekerjaanFinal = (selectPekerjaan.value === "Lainnya...") ? document.getElementById('catatanManual').value : selectPekerjaan.value;
+                payload.append('jenisPekerjaan', pekerjaanFinal);
+                
+                // Kirim Foto
+                payload.append('fotoUrl', reader.result); // Mengirim lengkap dengan header data:image/jpeg;base64
+                
+                fetch(scriptURL, { 
+                    method: 'POST', 
+                    body: payload,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                })
                 .then(res => {
                     document.getElementById('successMessage').classList.remove('hidden');
                     form.reset();
@@ -191,11 +210,13 @@
                     setTimeout(() => document.getElementById('successMessage').classList.add('hidden'), 5000);
                 })
                 .catch(err => {
-                    alert("Gagal kirim!");
+                    alert("Gagal kirim! Periksa internet.");
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                 });
             };
+            
+            reader.readAsDataURL(file);
         });
 
         function switchTab(mode) {
