@@ -71,7 +71,16 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
                     <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                        <option value="">-- Memuat Pekerjaan... --</option>
+                        <option value="">-- Pilih Pekerjaan --</option>
+                        <option value="Mencabut Rumput">Mencabut Rumput</option>
+                        <option value="Menanam Tanaman">Menanam Tanaman</option>
+                        <option value="Menyapu Taman">Menyapu Taman</option>
+                        <option value="Membersihkan Sampah">Membersihkan Sampah</option>
+                        <option value="Memotong Rumput">Memotong Rumput</option>
+                        <option value="Memangkas Pohon">Memangkas Pohon</option>
+                        <option value="Menyiram Tanaman">Menyiram Tanaman</option>
+                        <option value="Memupuk Tanaman">Memupuk Tanaman</option>
+                        <option value="Lainnya...">Lainnya...</option>
                     </select>
                 </div>
 
@@ -113,7 +122,7 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbwuzI-8m-7PCZvg2Qa8mh3ZVLNbpla00VT_GpIEKO3AlEMiox63pgT7rfO4_ddBjoZJ0g/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbykefP5BH8q7bjQkzal_4NQvTVeR9xst2wec0l-s2pz6p_iHg841Y4Qd133GIF2xES-qg/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -134,6 +143,7 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
+        // LOGIKA BARU: MENAMPILKAN PRATINJAU FOTO
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -228,33 +238,18 @@
         }
 
         window.onload = function() {
-            // Ambil Data Petugas & Jenis Pekerjaan Sekaligus
             fetch(scriptURL)
                 .then(res => res.json())
                 .then(data => {
-                    // 1. Proses Data Petugas
-                    dataMapping = data.mapping; 
+                    dataMapping = data;
                     selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
-                    Object.keys(dataMapping).sort().forEach(nama => {
+                    Object.keys(data).sort().forEach(nama => {
                         const opt = document.createElement('option');
                         opt.value = opt.text = nama;
                         selectPetugas.add(opt);
                     });
-
-                    // 2. Proses Data Jenis Pekerjaan (DIAMBIL DARI SPREADSHEET)
-                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
-                    if (data.pekerjaan && data.pekerjaan.length > 0) {
-                        data.pekerjaan.forEach(kerja => {
-                            const opt = document.createElement('option');
-                            opt.value = opt.text = kerja;
-                            selectPekerjaan.add(opt);
-                        });
-                    }
-                    const optLainnya = document.createElement('option');
-                    optLainnya.value = optLainnya.text = "Lainnya...";
-                    selectPekerjaan.add(optLainnya);
                 })
-                .catch(err => { status.innerHTML = "Gagal memuat data dari server."; });
+                .catch(err => { status.innerHTML = "Gagal memuat daftar petugas."; });
 
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(function(position) {
@@ -318,7 +313,7 @@
                 if (response.ok) {
                     successMsg.classList.remove('hidden');
                     form.reset();
-                    previewContainer.classList.add('hidden');
+                    previewContainer.classList.add('hidden'); // Sembunyikan preview setelah kirim
                     wrapperLainnya.classList.add('hidden');
                     wrapperLokasiLainnya.classList.add('hidden');
                     btn.disabled = false;
