@@ -11,6 +11,8 @@
         .bg-green-custom { background-color: var(--primary); }
         .btn-submit { background-color: var(--primary); transition: 0.3s; }
         .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
+        .loader { border-top-color: #ffffff; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
@@ -37,14 +39,14 @@
             <form id="reportForm" class="p-6 space-y-5">
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
-                    <select id="petugas" name="namaPetugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                    <select id="petugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
                         <option value="">-- Memuat Nama... --</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Taman</label>
-                    <select id="lokasi" name="lokasiTaman" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                    <select id="lokasi" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
                         <option value="">-- Pilih Nama Petugas Dulu --</option>
                     </select>
                 </div>
@@ -52,7 +54,7 @@
                 <div id="wrapperLokasiLainnya" class="hidden">
                     <label class="block text-sm font-semibold text-gray-700 mb-1 italic text-green-700">Tulis Nama Lokasi Baru:</label>
                     <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi di sini..." 
-                        class="w-full p-3 border-2 border-green-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm">
+                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm border-green-200">
                 </div>
 
                 <div>
@@ -68,16 +70,19 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
-                    <select id="pilihanPekerjaan" name="jenisPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                    <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
                         <option value="">-- Memuat Pekerjaan... --</option>
                     </select>
                 </div>
 
-                <div id="wrapperPekerjaanLainnya" class="hidden">
+                <div id="wrapperLainnya" class="hidden">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Sebutkan Pekerjaan Lainnya</label>
                     <textarea id="catatanManual" rows="2" placeholder="Ketik jenis pekerjaan di sini..." 
                         class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50"></textarea>
                 </div>
+
+                <input type="hidden" id="gps">
+                <input type="hidden" id="pengawasOtomatis">
 
                 <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
                     <span>KIRIM LAPORAN</span>
@@ -85,25 +90,30 @@
 
                 <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center animate-bounce">
                     <p class="font-bold">✅ LAPORAN BERHASIL TERKIRIM!</p>
+                    <p class="text-xs mt-1 italic text-green-600">Menunggu verifikasi pengawas...</p>
                 </div>
             </form>
         </div>
 
         <div id="sectionVerif" class="hidden p-6 space-y-4">
-            <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider text-center">Fitur Verifikasi</h2>
-            <p class="text-center text-gray-400 py-10 italic">Halaman ini hanya untuk Pengawas/Koordinator.</p>
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Menunggu Persetujuan</h2>
+                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold">KELUAR</button>
+            </div>
+            <div id="pendingContainer" class="space-y-3">
+                <p class="text-center text-gray-400 py-10 italic">Memuat data...</p>
+            </div>
         </div>
 
         <div id="status" class="text-center text-sm font-medium pt-2 px-6"></div>
 
         <footer class="text-center py-6 text-gray-400 text-xs mt-auto">
-            &copy; 2026 SI-PAMAN TRI - DPRKPP Kab. Barito Selatan
+            &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
         </footer>
     </div>
 
     <script>
-        // Ganti URL ini dengan URL Deployment terbaru dari Google Apps Script
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxjllnTA6LNPBWn6gbytiQbptkv4gOeGgm7samUvPK7oNEUaCE1QWOfUpd_33hVcjJfKw/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwuzI-8m-7PCZvg2Qa8mh3ZVLNbpla00VT_GpIEKO3AlEMiox63pgT7rfO4_ddBjoZJ0g/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -111,110 +121,246 @@
         const selectPetugas = document.getElementById('petugas');
         const selectLokasi = document.getElementById('lokasi');
         const selectPekerjaan = document.getElementById('pilihanPekerjaan');
+        const wrapperLainnya = document.getElementById('wrapperLainnya');
+        const wrapperLokasiLainnya = document.getElementById('wrapperLokasiLainnya');
+        const lokasiManual = document.getElementById('lokasiManual');
+        const catatanManual = document.getElementById('catatanManual');
+        const inputPengawas = document.getElementById('pengawasOtomatis');
+        const successMsg = document.getElementById('successMessage');
         const inputFoto = document.getElementById('foto');
         const previewContainer = document.getElementById('previewContainer');
         const imagePreview = document.getElementById('imagePreview');
 
         let dataMapping = {}; 
+        window.currentUserPengawas = null;
 
-        // Preview Foto
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = e => {
+                reader.onload = function(e) {
                     imagePreview.src = e.target.result;
                     previewContainer.classList.remove('hidden');
                 }
                 reader.readAsDataURL(file);
+            } else {
+                previewContainer.classList.add('hidden');
             }
         });
 
-        // Load Data Petugas & Pekerjaan saat buka Form
-        window.onload = function() {
-            fetch(scriptURL)
-                .then(res => res.json())
-                .then(data => {
-                    dataMapping = data.mapping; 
-                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
-                    Object.keys(dataMapping).sort().forEach(nama => {
-                        selectPetugas.innerHTML += `<option value="${nama}">${nama}</option>`;
-                    });
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        const maxSide = 1000;
+                        if (width > height) {
+                            if (width > maxSide) { height *= maxSide / width; width = maxSide; }
+                        } else {
+                            if (height > maxSide) { width *= maxSide / height; height = maxSide; }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                        resolve(dataUrl.split(',')[1]); 
+                    };
+                };
+            });
+        }
 
-                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
-                    data.pekerjaan.forEach(kerja => {
-                        selectPekerjaan.innerHTML += `<option value="${kerja}">${kerja}</option>`;
-                    });
-                    selectPekerjaan.innerHTML += '<option value="Lainnya...">Lainnya...</option>';
-                })
-                .catch(err => console.log("Gagal muat data"));
-        };
-
-        // Update Lokasi berdasarkan Petugas
-        selectPetugas.addEventListener('change', function() {
-            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi --</option>';
-            if (this.value && dataMapping[this.value]) {
-                dataMapping[this.value].lokasi.forEach(loc => {
-                    selectLokasi.innerHTML += `<option value="${loc}">${loc}</option>`;
-                });
-                selectLokasi.innerHTML += '<option value="Lainnya...">Lainnya...</option>';
+        selectLokasi.addEventListener('change', function() {
+            if (this.value === "Lainnya..." || this.value === "LAINNYA") {
+                wrapperLokasiLainnya.classList.remove('hidden');
+                lokasiManual.setAttribute('required', 'true');
+                lokasiManual.focus();
+            } else {
+                wrapperLokasiLainnya.classList.add('hidden');
+                lokasiManual.removeAttribute('required');
+                lokasiManual.value = "";
             }
         });
 
-        // Toggle Input Manual
-        selectLokasi.addEventListener('change', () => document.getElementById('wrapperLokasiLainnya').classList.toggle('hidden', selectLokasi.value !== "Lainnya..."));
-        selectPekerjaan.addEventListener('change', () => document.getElementById('wrapperPekerjaanLainnya').classList.toggle('hidden', selectPekerjaan.value !== "Lainnya..."));
-
-        // KIRIM DATA
-        form.addEventListener('submit', e => {
-            e.preventDefault();
-            btn.disabled = true;
-            btn.innerHTML = "⏳ Mengirim...";
-
-            const file = inputFoto.files[0];
-            const reader = new FileReader();
-            
-            reader.onload = function() {
-                const payload = new URLSearchParams();
-                payload.append('namaPetugas', selectPetugas.value);
-                
-                const lokFinal = (selectLokasi.value === "Lainnya...") ? document.getElementById('lokasiManual').value : selectLokasi.value;
-                payload.append('lokasiTaman', lokFinal);
-                
-                const pekFinal = (selectPekerjaan.value === "Lainnya...") ? document.getElementById('catatanManual').value : selectPekerjaan.value;
-                payload.append('jenisPekerjaan', pekFinal);
-                
-                payload.append('fotoUrl', reader.result); // Mengirim Base64 lengkap
-                
-                fetch(scriptURL, { 
-                    method: 'POST', 
-                    body: payload,
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-                })
-                .then(res => {
-                    document.getElementById('successMessage').classList.remove('hidden');
-                    form.reset();
-                    previewContainer.classList.add('hidden');
-                    btn.disabled = false;
-                    btn.innerHTML = "KIRIM LAPORAN";
-                    window.scrollTo({top: 0, behavior: 'smooth'});
-                    setTimeout(() => document.getElementById('successMessage').classList.add('hidden'), 5000);
-                })
-                .catch(err => {
-                    alert("Koneksi Error. Coba lagi.");
-                    btn.disabled = false;
-                    btn.innerHTML = "KIRIM LAPORAN";
-                });
-            };
-            reader.readAsDataURL(file);
+        selectPekerjaan.addEventListener('change', function() {
+            if (this.value === "Lainnya...") {
+                wrapperLainnya.classList.remove('hidden');
+                catatanManual.setAttribute('required', 'true');
+            } else {
+                wrapperLainnya.classList.add('hidden');
+                catatanManual.removeAttribute('required');
+                catatanManual.value = "";
+            }
         });
 
-        function switchTab(mode) {
+        function logoutPengawas() {
+            window.currentUserPengawas = null;
+            switchTab('lapor');
+            alert("Sesi pengawas berakhir.");
+        }
+
+        async function switchTab(mode) {
             const isLapor = mode === 'lapor';
+            if (!isLapor && !window.currentUserPengawas) {
+                try {
+                    const res = await fetch(scriptURL + "?action=getAuthPengawas");
+                    const authData = await res.json();
+                    const namaInput = prompt("Masukkan Nama Pengawas:");
+                    if (authData[namaInput]) {
+                        const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
+                        if (pinInput === authData[namaInput]) {
+                            window.currentUserPengawas = namaInput;
+                        } else { alert("❌ PIN Salah!"); return; }
+                    } else { alert("❌ Nama Pengawas tidak terdaftar!"); return; }
+                } catch (err) { alert("Gagal memverifikasi identitas."); return; }
+            }
             document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
             document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
             document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
             document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            if (!isLapor) loadPending();
+        }
+
+        window.onload = function() {
+            // Ambil Data Petugas & Jenis Pekerjaan Sekaligus
+            fetch(scriptURL)
+                .then(res => res.json())
+                .then(data => {
+                    // 1. Proses Data Petugas
+                    dataMapping = data.mapping; 
+                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
+                    Object.keys(dataMapping).sort().forEach(nama => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = nama;
+                        selectPetugas.add(opt);
+                    });
+
+                    // 2. Proses Data Jenis Pekerjaan (DIAMBIL DARI SPREADSHEET)
+                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
+                    if (data.pekerjaan && data.pekerjaan.length > 0) {
+                        data.pekerjaan.forEach(kerja => {
+                            const opt = document.createElement('option');
+                            opt.value = opt.text = kerja;
+                            selectPekerjaan.add(opt);
+                        });
+                    }
+                    const optLainnya = document.createElement('option');
+                    optLainnya.value = optLainnya.text = "Lainnya...";
+                    selectPekerjaan.add(optLainnya);
+                })
+                .catch(err => { status.innerHTML = "Gagal memuat data dari server."; });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
+                });
+            }
+        };
+
+        selectPetugas.addEventListener('change', function() {
+            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
+            inputPengawas.value = "";
+            
+            if (this.value && dataMapping[this.value]) {
+                let daftarAsli = dataMapping[this.value].lokasi;
+                let lokasiTaman = daftarAsli.filter(loc => {
+                    return loc.trim() !== "Lainnya..." && loc.trim() !== "LAINNYA";
+                });
+
+                lokasiTaman.sort().forEach(loc => {
+                    const opt = document.createElement('option');
+                    opt.value = opt.text = loc;
+                    selectLokasi.add(opt);
+                });
+
+                const optLainnya = document.createElement('option');
+                optLainnya.value = optLainnya.text = "Lainnya...";
+                selectLokasi.add(optLainnya);
+
+                inputPengawas.value = dataMapping[this.value].pengawas || "-";
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.innerHTML = `<span>Mengirim...</span>`;
+            
+            const file = inputFoto.files[0];
+            
+            try {
+                const bytes = await compressImage(file);
+                
+                let isiLokasi = (selectLokasi.value === "Lainnya..." || selectLokasi.value === "LAINNYA") ? lokasiManual.value : selectLokasi.value;
+                let isiCatatan = selectPekerjaan.value === "Lainnya..." ? catatanManual.value : selectPekerjaan.value;
+
+                const params = {
+                    petugas: selectPetugas.value,
+                    lokasi: isiLokasi,
+                    catatan: isiCatatan,
+                    gps: document.getElementById('gps').value,
+                    pengawas: inputPengawas.value
+                };
+                
+                const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
+
+                const response = await fetch(finalUrl, {
+                    method: 'POST',
+                    body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
+                });
+
+                if (response.ok) {
+                    successMsg.classList.remove('hidden');
+                    form.reset();
+                    previewContainer.classList.add('hidden');
+                    wrapperLainnya.classList.add('hidden');
+                    wrapperLokasiLainnya.classList.add('hidden');
+                    btn.disabled = false;
+                    btn.innerHTML = "KIRIM LAPORAN";
+                    setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
+                }
+            } catch (err) {
+                status.innerHTML = "❌ Gagal Mengirim: " + err;
+                btn.disabled = false;
+                btn.innerHTML = "KIRIM LAPORAN";
+            }
+        });
+
+        function loadPending() {
+            const container = document.getElementById('pendingContainer');
+            container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
+            fetch(scriptURL + "?action=getPending")
+                .then(res => res.json())
+                .then(data => {
+                    const filteredData = data.filter(item => {
+                        const detailPetugas = dataMapping[item.petugas];
+                        return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
+                    });
+                    container.innerHTML = filteredData.length === 0 ? '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending.</p>' : '';
+                    filteredData.forEach(item => {
+                        container.innerHTML += `
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs space-y-2">
+                                <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
+                                <p class="text-gray-500 italic">"${item.catatan}"</p>
+                                <div class="flex space-x-2 pt-1">
+                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">FOTO</a>
+                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">SETUJU</button>
+                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">TOLAK</button>
+                                </div>
+                            </div>`;
+                    });
+                });
+        }
+
+        function doVerify(rowId, status) {
+            fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
+                .then(() => { alert("Berhasil!"); loadPending(); });
         }
     </script>
 </body>
