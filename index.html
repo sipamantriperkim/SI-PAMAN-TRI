@@ -27,7 +27,7 @@
                 </svg>
             </div>
             <h1 class="text-3xl font-extrabold tracking-tight">SI-PAMAN TRI</h1>
-            <p class="text-sm opacity-90 mt-1 font-light italic">Sistem Pelaporan Petugas Taman Terintegrasi</p>
+            <p class="text-sm opacity-90 mt-1 font-light italic text-center">Sistem Pelaporan Petugas Taman Terintegrasi</p>
         </div>
 
         <div class="flex p-2 bg-gray-100 mx-6 mt-4 rounded-xl space-x-2">
@@ -99,7 +99,7 @@
         </div>
 
         <footer class="text-center py-6 text-gray-400 text-xs mt-auto">
-            &copy; 2026 SI-PAMAN TRI - Kab. Barito Barsel
+            &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
         </footer>
     </div>
 
@@ -249,12 +249,19 @@
             if (!isLapor && !window.currentUserPengawas) {
                 const res = await fetch(scriptURL + "?action=getAuthPengawas");
                 const auth = await res.json();
-                const nama = prompt("Nama Pengawas:");
+                
+                let inputNama = prompt("Masukkan Nama Pengawas:");
+                if (inputNama === null) return;
+                
+                // Perbaikan: Ubah ke Huruf Besar & Hapus Spasi agar sinkron dengan Sheet
+                const nama = inputNama.toUpperCase().trim();
+
                 if (auth[nama]) {
-                    const pin = prompt("PIN:");
-                    if (pin === auth[nama]) window.currentUserPengawas = nama;
-                    else { alert("PIN Salah!"); return; }
-                } else { alert("Tidak terdaftar!"); return; }
+                    const pin = prompt("Masukkan PIN untuk " + nama + ":");
+                    if (pin === auth[nama].toString()) {
+                        window.currentUserPengawas = nama;
+                    } else { alert("PIN Salah!"); return; }
+                } else { alert("Nama '" + nama + "' Tidak Terdaftar!"); return; }
             }
             document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
             document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
@@ -265,18 +272,18 @@
 
         function loadPending() {
             const container = document.getElementById('pendingContainer');
-            container.innerHTML = "Memuat...";
+            container.innerHTML = "Memuat data...";
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
                     const filtered = data.filter(item => dataMapping[item.petugas]?.pengawas === window.currentUserPengawas);
-                    container.innerHTML = filtered.length ? '' : '<p class="text-center py-10">Kosong.</p>';
+                    container.innerHTML = filtered.length ? '' : '<p class="text-center py-10 italic text-gray-400">Tidak ada antrean.</p>';
                     filtered.forEach(item => {
                         container.innerHTML += `
                             <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 text-xs space-y-2">
                                 <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
                                 <p class="italic">"${item.catatan}"</p>
-                                <div class="flex space-x-2">
+                                <div class="flex space-x-2 pt-1">
                                     <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold">FOTO</a>
                                     <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold">SETUJU</button>
                                     <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold">TOLAK</button>
