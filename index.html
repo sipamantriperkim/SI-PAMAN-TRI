@@ -113,8 +113,7 @@
     </div>
 
     <script>
-        // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbyOoZLV-UGiY3O2jxT-LmkFINCqpWGupN15L7zyPh77KGOY_77py8sDAS_0nVx0Lfz2Lw/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzERPmfDpqmGfcc6DKrfu5Kc5reef4N4Db-l9l9YKKaqPsWx9Dahoi8o8lLZPx9efK_OA/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -135,14 +134,11 @@
         let dataMaster = {}; 
         window.currentUserPengawas = null;
 
-        // LOAD DATA AWAL (PETUGAS & PEKERJAAN)
         window.onload = function() {
             fetch(scriptURL)
                 .then(res => res.json())
                 .then(data => {
-                    dataMaster = data; // Struktur: {petugas: {...}, pekerjaan: [...]}
-                    
-                    // 1. Isi Dropdown Petugas
+                    dataMaster = data;
                     selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
                     Object.keys(data.petugas).sort().forEach(nama => {
                         const opt = document.createElement('option');
@@ -150,7 +146,6 @@
                         selectPetugas.add(opt);
                     });
 
-                    // 2. Isi Dropdown Pekerjaan
                     selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
                     data.pekerjaan.forEach(pks => {
                         const opt = document.createElement('option');
@@ -170,16 +165,13 @@
             }
         };
 
-        // EVENT: SAAT NAMA PETUGAS DIPILIH (Pecah Lokasi dengan Koma)
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
             inputPengawas.value = "";
             
             if (this.value && dataMaster.petugas[this.value]) {
                 const info = dataMaster.petugas[this.value];
-                
-                // Pecah lokasi berdasarkan koma
-                let daftarLokasi = info.lokasi.split(',');
+                let daftarLokasi = info.lokasi ? info.lokasi.toString().split(',') : [];
                 
                 daftarLokasi.forEach(loc => {
                     if(loc.trim()){
@@ -192,12 +184,10 @@
                 const optLainnya = document.createElement('option');
                 optLainnya.value = optLainnya.text = "Lainnya...";
                 selectLokasi.add(optLainnya);
-
                 inputPengawas.value = info.pengawas || "-";
             }
         });
 
-        // TAMPILAN PREVIEW FOTO
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -210,7 +200,6 @@
             }
         });
 
-        // KOMPRESI FOTO
         async function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -234,7 +223,6 @@
             });
         }
 
-        // LOGIKA DROPDOWN "LAINNYA"
         selectLokasi.addEventListener('change', function() {
             wrapperLokasiLainnya.classList.toggle('hidden', this.value !== "Lainnya...");
             lokasiManual.required = this.value === "Lainnya...";
@@ -245,7 +233,6 @@
             catatanManual.required = this.value === "Lainnya...";
         });
 
-        // SUBMIT FORM
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btn.disabled = true;
@@ -270,12 +257,14 @@
                     body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
                 });
 
-                if (response.ok) {
+                const result = await response.text();
+                if (result === "Success") {
                     successMsg.classList.remove('hidden');
                     form.reset();
                     previewContainer.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                     setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
                 }
             } catch (err) {
@@ -285,13 +274,12 @@
             }
         });
 
-        // TAB SWITCH & VERIFIKASI (TETAP SAMA)
         async function switchTab(mode) {
             const isLapor = mode === 'lapor';
             if (!isLapor && !window.currentUserPengawas) {
                 const namaInput = prompt("Masukkan Nama Pengawas:");
                 if (namaInput) {
-                    const pinInput = prompt(`Halo ${namaInput}, masukkan PIN (Default: 1234):`);
+                    const pinInput = prompt(`Halo ${namaInput}, masukkan PIN:`);
                     if (pinInput === "1234") { window.currentUserPengawas = namaInput; } 
                     else { alert("PIN Salah!"); return; }
                 } else return;
