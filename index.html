@@ -11,9 +11,11 @@
         .bg-green-custom { background-color: var(--primary); }
         .btn-submit { background-color: var(--primary); transition: 0.3s; }
         .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
-        .loader { border-top-color: #ffffff; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        
+        /* Font input & select diperbesar agar mudah diklik di HP */
+        select, input, textarea, button { font-size: 14px !important; }
+        .badge-lokasi { background: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 6px; font-weight: bold; font-size: 11px; }
     </style>
 </head>
 <body class="font-sans antialiased text-gray-900">
@@ -27,10 +29,10 @@
                 </svg>
             </div>
             <h1 class="text-3xl font-extrabold tracking-tight">SI-PAMAN TRI</h1>
-            <p class="text-sm opacity-90 mt-1 font-light italic">Sistem Pelaporan Petugas Taman Terintegrasi</p>
+            <p class="text-sm opacity-90 mt-1 font-light italic text-center">Sistem Pelaporan Petugas Taman Terintegrasi</p>
         </div>
 
-        <div class="flex p-2 bg-gray-100 mx-6 mt-4 rounded-xl space-x-2">
+        <div class="flex p-2 bg-gray-100 mx-6 mt-4 rounded-xl space-x-2 border border-gray-200">
             <button onclick="switchTab('lapor')" id="tabLaporBtn" class="flex-1 py-2 text-xs rounded-lg tab-active">LAPOR</button>
             <button onclick="switchTab('verif')" id="tabVerifBtn" class="flex-1 py-2 text-xs rounded-lg text-gray-500">VERIFIKASI</button>
         </div>
@@ -38,39 +40,39 @@
         <div id="sectionLapor">
             <form id="reportForm" class="p-6 space-y-5">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
-                    <select id="petugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Nama Petugas</label>
+                    <select id="petugas" required class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50 shadow-sm">
                         <option value="">-- Memuat Nama... --</option>
                     </select>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Taman</label>
-                    <select id="lokasi" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                        <option value="">-- Pilih Nama Petugas Dulu --</option>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Lokasi Taman</label>
+                    <select id="lokasi" required class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50 shadow-sm">
+                        <option value="">-- Pilih Petugas Dulu --</option>
                     </select>
                 </div>
 
-                <div id="wrapperLokasiLainnya" class="hidden">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 italic text-green-700">Tulis Nama Lokasi Baru:</label>
+                <div id="wrapperLokasiLainnya" class="hidden animate-fade-in">
+                    <label class="block text-sm font-bold text-green-700 mb-1 italic">Tulis Nama Lokasi Baru:</label>
                     <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi di sini..." 
-                        class="w-full p-3 border-2 border-green-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm">
+                        class="w-full p-4 border-2 border-green-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-md">
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
                     <input type="file" id="foto" accept="image/*" capture="environment" required 
-                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
+                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-green-100 file:text-green-800 border-2 border-dashed border-gray-300 p-4 rounded-xl bg-gray-50">
                     
-                    <div id="previewContainer" class="hidden mt-3 p-2 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center">
-                        <p class="text-[10px] text-gray-400 mb-1 uppercase font-bold">Hasil Tangkapan Kamera:</p>
-                        <img id="imagePreview" src="" class="max-h-48 rounded-lg shadow-md border border-white">
+                    <div id="previewContainer" class="hidden mt-3 p-2 bg-white border border-gray-200 rounded-xl flex flex-col items-center shadow-inner">
+                        <p class="text-[10px] text-gray-400 mb-1 uppercase font-bold tracking-widest">Pratinjau Foto:</p>
+                        <img id="imagePreview" src="" class="max-h-48 rounded-lg shadow-lg">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
-                    <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                    <label class="block text-sm font-bold text-gray-700 mb-1">Jenis Pekerjaan</label>
+                    <select id="pilihanPekerjaan" required class="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50 shadow-sm">
                         <option value="">-- Memuat Pekerjaan... --</option>
                     </select>
                 </div>
@@ -78,34 +80,33 @@
                 <input type="hidden" id="gps">
                 <input type="hidden" id="pengawasOtomatis">
 
-                <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
+                <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-extrabold py-5 rounded-2xl shadow-xl flex justify-center items-center space-x-2 text-lg">
                     <span>KIRIM LAPORAN</span>
                 </button>
 
-                <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center animate-bounce">
-                    <p class="font-bold">✅ LAPORAN BERHASIL TERKIRIM!</p>
-                    <p class="text-xs mt-1 italic text-green-600">Menunggu verifikasi pengawas...</p>
+                <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-500 text-green-800 rounded-xl text-center shadow-lg">
+                    <p class="font-black text-sm">✅ BERHASIL TERKIRIM!</p>
                 </div>
             </form>
         </div>
 
         <div id="sectionVerif" class="hidden p-6 space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Menunggu Persetujuan</h2>
-                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold">KELUAR</button>
+            <div class="flex justify-between items-center pb-2 border-bottom border-gray-100">
+                <h2 class="text-xs font-black text-gray-400 uppercase tracking-widest">Antrean Persetujuan</h2>
+                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-700 px-3 py-1.5 rounded-lg font-black uppercase">LOGOUT</button>
             </div>
-            <div id="pendingContainer" class="space-y-3">
-                <p class="text-center text-gray-400 py-10 italic">Memuat data...</p>
+            <div id="pendingContainer" class="space-y-4">
+                <p class="text-center text-gray-400 py-20 italic">Memuat data...</p>
             </div>
         </div>
 
-        <footer class="text-center py-6 text-gray-400 text-xs mt-auto">
+        <footer class="text-center py-8 text-gray-400 text-[10px] mt-auto">
             &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
         </footer>
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxvcOATVs-UE3mHWx777YWS53Ol1qEq5iw81k2jmtn7ZTi9f7WBxfTD8Oy574_7T9W3Xw/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxkOmwJIWaELLJ02bjwzdQlYkZyjm2GJX30ypJr48niXlTcoHGzgcwjJIYJJdY0W3r95A/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -123,7 +124,6 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // 1. FUNGSI: MUAT PEKERJAAN (Hapus Pilihan "Lainnya...")
         function loadPekerjaan() {
             fetch(scriptURL + "?action=getReferensiPekerjaan")
                 .then(res => res.json())
@@ -134,11 +134,9 @@
                         opt.value = opt.text = pjk;
                         selectPekerjaan.add(opt);
                     });
-                })
-                .catch(err => console.log("Gagal muat referensi pekerjaan"));
+                });
         }
 
-        // 2. PRATINJAU FOTO & KOMPRESI
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -170,7 +168,6 @@
             });
         }
 
-        // 3. LOGIKA ONLOAD
         window.onload = function() {
             fetch(scriptURL)
                 .then(res => res.json())
@@ -191,7 +188,6 @@
             }
         };
 
-        // 4. LOGIKA PILIH PETUGAS
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
             if (this.value && dataMapping[this.value]) {
@@ -205,25 +201,27 @@
                         selectLokasi.add(opt);
                     }
                 });
+                // TETAP ADA OPSI LAINNYA
                 const optLainnya = document.createElement('option');
                 optLainnya.value = optLainnya.text = "Lainnya...";
                 selectLokasi.add(optLainnya);
+
                 inputPengawas.value = dataMapping[this.value].pengawas || "-";
             }
         });
 
-        // 5. LOGIKA TOGGLE INPUT MANUAL LOKASI
+        // LOGIKA TAMPILKAN INPUT MANUAL
         selectLokasi.addEventListener('change', function() {
             const isManual = this.value === "Lainnya...";
             wrapperLokasiLainnya.classList.toggle('hidden', !isManual);
             lokasiManual.required = isManual;
+            if (isManual) lokasiManual.focus();
         });
 
-        // 6. KIRIM FORM
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btn.disabled = true;
-            btn.innerHTML = "<span>Mengirim...</span>";
+            btn.innerHTML = "<span>Memproses...</span>";
             try {
                 const bytes = await compressImage(inputFoto.files[0]);
                 const params = new URLSearchParams({
@@ -240,19 +238,19 @@
                 if (response.ok) {
                     successMsg.classList.remove('hidden');
                     form.reset();
+                    wrapperLokasiLainnya.classList.add('hidden');
                     previewContainer.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
-                    setTimeout(() => successMsg.classList.add('hidden'), 5000);
+                    setTimeout(() => successMsg.classList.add('hidden'), 4000);
                 }
             } catch (err) {
-                alert("Error: " + err);
+                alert("Gagal kirim! Cek koneksi internet.");
                 btn.disabled = false;
                 btn.innerHTML = "KIRIM LAPORAN";
             }
         });
 
-        // 7. VERIFIKASI (TETAP SAMA)
         async function switchTab(mode) {
             const isLapor = mode === 'lapor';
             if (!isLapor && !window.currentUserPengawas) {
@@ -263,7 +261,7 @@
                     const pin = prompt("PIN:");
                     if (pin === auth[nama]) window.currentUserPengawas = nama;
                     else { alert("PIN Salah!"); return; }
-                } else { alert("Tidak terdaftar!"); return; }
+                } else { alert("Nama Pengawas tidak dikenal!"); return; }
             }
             document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
             document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
@@ -274,21 +272,28 @@
 
         function loadPending() {
             const container = document.getElementById('pendingContainer');
-            container.innerHTML = "Memuat...";
+            container.innerHTML = '<p class="text-center py-10 italic text-gray-400">Menyinkronkan data...</p>';
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
                     const filtered = data.filter(item => dataMapping[item.petugas]?.pengawas === window.currentUserPengawas);
-                    container.innerHTML = filtered.length ? '' : '<p class="text-center py-10">Kosong.</p>';
+                    container.innerHTML = filtered.length ? '' : '<p class="text-center py-10 font-bold text-gray-300">TIDAK ADA ANTREAN</p>';
                     filtered.forEach(item => {
                         container.innerHTML += `
-                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 text-xs space-y-2">
-                                <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
-                                <p class="italic">"${item.catatan}"</p>
-                                <div class="flex space-x-2">
-                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold">FOTO</a>
-                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold">SETUJU</button>
-                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold">TOLAK</button>
+                            <div class="bg-white p-5 rounded-3xl border border-gray-100 shadow-xl mb-4 space-y-4">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-[14px] font-black text-gray-900">${item.petugas.toUpperCase()}</p>
+                                        <div class="mt-2"><span class="badge-lokasi">${item.lokasi}</span></div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-50 p-3 rounded-2xl border-l-4 border-green-600 shadow-inner">
+                                    <p class="text-[13px] text-gray-700 leading-relaxed italic">"${item.catatan}"</p>
+                                </div>
+                                <div class="flex gap-2 pt-2">
+                                    <a href="${item.foto}" target="_blank" class="flex-1 bg-blue-100 text-blue-700 text-center py-3 rounded-2xl font-black text-[11px] border border-blue-200">LIHAT FOTO</a>
+                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="flex-1 bg-green-700 text-white py-3 rounded-2xl font-black text-[11px] shadow-lg">SETUJU</button>
+                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="flex-1 bg-red-100 text-red-700 py-3 rounded-2xl font-black text-[11px]">TOLAK</button>
                                 </div>
                             </div>`;
                     });
