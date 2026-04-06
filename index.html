@@ -11,9 +11,9 @@
         .bg-green-custom { background-color: var(--primary); }
         .btn-submit { background-color: var(--primary); transition: 0.3s; }
         .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
+        .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .loader { border-top-color: #ffffff; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
     </style>
 </head>
 <body class="font-sans antialiased text-gray-900">
@@ -22,12 +22,12 @@
         
         <div class="bg-green-custom p-8 text-white text-center rounded-b-[30px] shadow-lg">
             <div class="flex justify-center mb-3">
-                <svg class="w-16 h-16 text-green-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <svg class="w-16 h-16 text-green-300" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z" />
                 </svg>
             </div>
             <h1 class="text-3xl font-extrabold tracking-tight">SI-PAMAN TRI</h1>
-            <p class="text-sm opacity-90 mt-1 font-light italic">Sistem Pelaporan Petugas Taman Terintegrasi</p>
+            <p class="text-sm opacity-90 mt-1 font-light italic">DPRKPP Barito Selatan</p>
         </div>
 
         <div class="flex p-2 bg-gray-100 mx-6 mt-4 rounded-xl space-x-2">
@@ -40,7 +40,7 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
                     <select id="petugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                        <option value="">-- Memuat Nama... --</option>
+                        <option value="">-- Memuat Data... --</option>
                     </select>
                 </div>
 
@@ -52,9 +52,8 @@
                 </div>
 
                 <div id="wrapperLokasiLainnya" class="hidden">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1 italic text-green-700">Tulis Nama Lokasi Baru:</label>
-                    <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi di sini..." 
-                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm border-green-200">
+                    <label class="block text-sm font-semibold text-green-700 mb-1 italic">Nama Lokasi Baru:</label>
+                    <input type="text" id="lokasiManual" placeholder="Ketik lokasi..." class="w-full p-3 border-2 border-green-200 rounded-xl outline-none">
                 </div>
 
                 <div>
@@ -63,50 +62,38 @@
                         class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
                     
                     <div id="previewContainer" class="hidden mt-3 p-2 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center">
-                        <p class="text-[10px] text-gray-400 mb-1 uppercase font-bold">Hasil Tangkapan Kamera:</p>
-                        <img id="imagePreview" src="" class="max-h-48 rounded-lg shadow-md border border-white">
+                        <img id="imagePreview" src="" class="max-h-48 rounded-lg shadow-md">
                     </div>
                 </div>
 
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
                     <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                        <option value="">-- Pilih Pekerjaan --</option>
-                        <option value="Mencabut Rumput">Mencabut Rumput</option>
-                        <option value="Menanam Tanaman">Menanam Tanaman</option>
-                        <option value="Menyapu Taman">Menyapu Taman</option>
-                        <option value="Membersihkan Sampah">Membersihkan Sampah</option>
-                        <option value="Memotong Rumput">Memotong Rumput</option>
-                        <option value="Memangkas Pohon">Memangkas Pohon</option>
-                        <option value="Menyiram Tanaman">Menyiram Tanaman</option>
-                        <option value="Memupuk Tanaman">Memupuk Tanaman</option>
-                        <option value="Lainnya...">Lainnya...</option>
+                        <option value="">-- Memuat Pekerjaan... --</option>
                     </select>
                 </div>
 
                 <div id="wrapperLainnya" class="hidden">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Sebutkan Pekerjaan Lainnya</label>
-                    <textarea id="catatanManual" rows="2" placeholder="Ketik jenis pekerjaan di sini..." 
-                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50"></textarea>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Sebutkan Pekerjaan</label>
+                    <textarea id="catatanManual" rows="2" class="w-full p-3 border-2 border-gray-200 rounded-xl outline-none bg-gray-50"></textarea>
                 </div>
 
                 <input type="hidden" id="gps">
                 <input type="hidden" id="pengawasOtomatis">
 
-                <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
-                    <span>KIRIM LAPORAN</span>
+                <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl">
+                    KIRIM LAPORAN
                 </button>
 
-                <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center animate-bounce">
+                <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center">
                     <p class="font-bold">✅ LAPORAN BERHASIL TERKIRIM!</p>
-                    <p class="text-xs mt-1 italic text-green-600">Menunggu verifikasi pengawas...</p>
                 </div>
             </form>
         </div>
 
         <div id="sectionVerif" class="hidden p-6 space-y-4">
             <div class="flex justify-between items-center">
-                <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Menunggu Persetujuan</h2>
+                <h2 class="text-sm font-bold text-gray-600 uppercase">Menunggu Persetujuan</h2>
                 <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded-md font-bold">KELUAR</button>
             </div>
             <div id="pendingContainer" class="space-y-3">
@@ -114,28 +101,20 @@
             </div>
         </div>
 
-        <div id="status" class="text-center text-sm font-medium pt-2 px-6"></div>
-
         <footer class="text-center py-6 text-gray-400 text-xs mt-auto">
             &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
         </footer>
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbykefP5BH8q7bjQkzal_4NQvTVeR9xst2wec0l-s2pz6p_iHg841Y4Qd133GIF2xES-qg/exec';
+        // GANTI DENGAN URL WEB APP ANDA SETELAH DEPLOY
+        const scriptURL = 'https://script.google.com/macros/s/AKfycby-KnMJ5DHtZ7aGHw4TWFputtQs1259_5KciEbG0ruMSn3XZrLE6DWqbIFwL5acu4JpvQ/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
-        const status = document.getElementById('status');
         const selectPetugas = document.getElementById('petugas');
         const selectLokasi = document.getElementById('lokasi');
         const selectPekerjaan = document.getElementById('pilihanPekerjaan');
-        const wrapperLainnya = document.getElementById('wrapperLainnya');
-        const wrapperLokasiLainnya = document.getElementById('wrapperLokasiLainnya');
-        const lokasiManual = document.getElementById('lokasiManual');
-        const catatanManual = document.getElementById('catatanManual');
-        const inputPengawas = document.getElementById('pengawasOtomatis');
-        const successMsg = document.getElementById('successMessage');
         const inputFoto = document.getElementById('foto');
         const previewContainer = document.getElementById('previewContainer');
         const imagePreview = document.getElementById('imagePreview');
@@ -143,210 +122,161 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // LOGIKA BARU: MENAMPILKAN PRATINJAU FOTO
+        // 1. Inisialisasi Data dari Spreadsheet
+        window.onload = function() {
+            fetch(scriptURL + "?action=getData")
+                .then(res => res.json())
+                .then(data => {
+                    dataMapping = data.petugas;
+                    
+                    // Isi Dropdown Petugas
+                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
+                    Object.keys(dataMapping).sort().forEach(nama => {
+                        let opt = new Option(nama, nama);
+                        selectPetugas.add(opt);
+                    });
+
+                    // Isi Dropdown Pekerjaan Dinamis
+                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
+                    data.pekerjaan.forEach(job => {
+                        let opt = new Option(job, job);
+                        selectPekerjaan.add(opt);
+                    });
+                    selectPekerjaan.add(new Option("Lainnya...", "Lainnya..."));
+                })
+                .catch(err => alert("Gagal memuat data. Periksa koneksi atau URL Script."));
+
+            // Get GPS
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(p => {
+                    document.getElementById('gps').value = p.coords.latitude + "," + p.coords.longitude;
+                });
+            }
+        };
+
+        // 2. Logika Pilih Petugas -> Munculkan Lokasi (Split Koma)
+        selectPetugas.addEventListener('change', function() {
+            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi --</option>';
+            if (this.value && dataMapping[this.value]) {
+                const info = dataMapping[this.value];
+                info.lokasi.forEach(loc => {
+                    selectLokasi.add(new Option(loc, loc));
+                });
+                selectLokasi.add(new Option("Lainnya...", "Lainnya..."));
+                document.getElementById('pengawasOtomatis').value = info.pengawas;
+            }
+        });
+
+        // 3. Logika Preview Foto & Kompresi
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     imagePreview.src = e.target.result;
                     previewContainer.classList.remove('hidden');
-                }
+                };
                 reader.readAsDataURL(file);
-            } else {
-                previewContainer.classList.add('hidden');
             }
         });
 
         async function compressImage(file) {
-            return new Promise((resolve) => {
+            return new Promise(resolve => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
-                reader.onload = (event) => {
+                reader.onload = event => {
                     const img = new Image();
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
-                        const maxSide = 1000;
-                        if (width > height) {
-                            if (width > maxSide) { height *= maxSide / width; width = maxSide; }
-                        } else {
-                            if (height > maxSide) { width *= maxSide / height; height = maxSide; }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        resolve(dataUrl.split(',')[1]); 
+                        let w = img.width, h = img.height;
+                        if (w > 1000) { h *= 1000/w; w = 1000; }
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
                     };
                 };
             });
         }
 
-        selectLokasi.addEventListener('change', function() {
-            if (this.value === "Lainnya..." || this.value === "LAINNYA") {
-                wrapperLokasiLainnya.classList.remove('hidden');
-                lokasiManual.setAttribute('required', 'true');
-                lokasiManual.focus();
-            } else {
-                wrapperLokasiLainnya.classList.add('hidden');
-                lokasiManual.removeAttribute('required');
-                lokasiManual.value = "";
-            }
-        });
-
-        selectPekerjaan.addEventListener('change', function() {
-            if (this.value === "Lainnya...") {
-                wrapperLainnya.classList.remove('hidden');
-                catatanManual.setAttribute('required', 'true');
-            } else {
-                wrapperLainnya.classList.add('hidden');
-                catatanManual.removeAttribute('required');
-                catatanManual.value = "";
-            }
-        });
-
-        function logoutPengawas() {
-            window.currentUserPengawas = null;
-            switchTab('lapor');
-            alert("Sesi pengawas berakhir.");
-        }
-
-        async function switchTab(mode) {
-            const isLapor = mode === 'lapor';
-            if (!isLapor && !window.currentUserPengawas) {
-                try {
-                    const res = await fetch(scriptURL + "?action=getAuthPengawas");
-                    const authData = await res.json();
-                    const namaInput = prompt("Masukkan Nama Pengawas:");
-                    if (authData[namaInput]) {
-                        const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
-                        if (pinInput === authData[namaInput]) {
-                            window.currentUserPengawas = namaInput;
-                        } else { alert("❌ PIN Salah!"); return; }
-                    } else { alert("❌ Nama Pengawas tidak terdaftar!"); return; }
-                } catch (err) { alert("Gagal memverifikasi identitas."); return; }
-            }
-            document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
-            document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
-            document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-            document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-            if (!isLapor) loadPending();
-        }
-
-        window.onload = function() {
-            fetch(scriptURL)
-                .then(res => res.json())
-                .then(data => {
-                    dataMapping = data;
-                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
-                    Object.keys(data).sort().forEach(nama => {
-                        const opt = document.createElement('option');
-                        opt.value = opt.text = nama;
-                        selectPetugas.add(opt);
-                    });
-                })
-                .catch(err => { status.innerHTML = "Gagal memuat daftar petugas."; });
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
-                });
-            }
-        };
-
-        selectPetugas.addEventListener('change', function() {
-            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
-            inputPengawas.value = "";
-            
-            if (this.value && dataMapping[this.value]) {
-                let daftarAsli = dataMapping[this.value].lokasi;
-                let lokasiTaman = daftarAsli.filter(loc => {
-                    return loc.trim() !== "Lainnya..." && loc.trim() !== "LAINNYA";
-                });
-
-                lokasiTaman.sort().forEach(loc => {
-                    const opt = document.createElement('option');
-                    opt.value = opt.text = loc;
-                    selectLokasi.add(opt);
-                });
-
-                const optLainnya = document.createElement('option');
-                optLainnya.value = optLainnya.text = "Lainnya...";
-                selectLokasi.add(optLainnya);
-
-                inputPengawas.value = dataMapping[this.value].pengawas || "-";
-            }
-        });
-
-        form.addEventListener('submit', async (e) => {
+        // 4. Kirim Data (POST)
+        form.addEventListener('submit', async e => {
             e.preventDefault();
             btn.disabled = true;
-            btn.innerHTML = `<span>Mengirim...</span>`;
-            
-            const file = inputFoto.files[0];
-            
+            btn.innerText = "Mengirim...";
+
             try {
-                const bytes = await compressImage(file);
-                
-                let isiLokasi = (selectLokasi.value === "Lainnya..." || selectLokasi.value === "LAINNYA") ? lokasiManual.value : selectLokasi.value;
-                let isiCatatan = selectPekerjaan.value === "Lainnya..." ? catatanManual.value : selectPekerjaan.value;
+                const bytes = await compressImage(inputFoto.files[0]);
+                const locFinal = selectLokasi.value === "Lainnya..." ? document.getElementById('lokasiManual').value : selectLokasi.value;
+                const jobFinal = selectPekerjaan.value === "Lainnya..." ? document.getElementById('catatanManual').value : selectPekerjaan.value;
 
-                const params = {
+                const query = new URLSearchParams({
                     petugas: selectPetugas.value,
-                    lokasi: isiLokasi,
-                    catatan: isiCatatan,
+                    lokasi: locFinal,
+                    catatan: jobFinal,
                     gps: document.getElementById('gps').value,
-                    pengawas: inputPengawas.value
-                };
-                
-                const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
-
-                const response = await fetch(finalUrl, {
-                    method: 'POST',
-                    body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
+                    pengawas: document.getElementById('pengawasOtomatis').value
                 });
 
-                if (response.ok) {
-                    successMsg.classList.remove('hidden');
+                const res = await fetch(`${scriptURL}?${query.toString()}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ bytes, mimeType: 'image/jpeg' })
+                });
+
+                if (res.ok) {
+                    document.getElementById('successMessage').classList.remove('hidden');
                     form.reset();
-                    previewContainer.classList.add('hidden'); // Sembunyikan preview setelah kirim
-                    wrapperLainnya.classList.add('hidden');
-                    wrapperLokasiLainnya.classList.add('hidden');
-                    btn.disabled = false;
-                    btn.innerHTML = "KIRIM LAPORAN";
-                    setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
+                    previewContainer.classList.add('hidden');
+                    setTimeout(() => document.getElementById('successMessage').classList.add('hidden'), 5000);
                 }
-            } catch (err) {
-                status.innerHTML = "❌ Gagal Mengirim: " + err;
-                btn.disabled = false;
-                btn.innerHTML = "KIRIM LAPORAN";
-            }
+            } catch (err) { alert("Error: " + err); }
+            btn.disabled = false;
+            btn.innerText = "KIRIM LAPORAN";
         });
+
+        // 5. Sistem Verifikasi Tab
+        async function switchTab(mode) {
+            if (mode === 'verif' && !window.currentUserPengawas) {
+                const authRes = await fetch(scriptURL + "?action=getAuthPengawas");
+                const authMap = await authRes.json();
+                const nama = prompt("Nama Pengawas:");
+                if (authMap[nama]) {
+                    const pin = prompt("Masukkan PIN:");
+                    if (pin === authMap[nama]) { window.currentUserPengawas = nama; }
+                    else { alert("PIN Salah!"); return; }
+                } else { alert("Pengawas tidak dikenal!"); return; }
+            }
+            
+            document.getElementById('sectionLapor').classList.toggle('hidden', mode === 'verif');
+            document.getElementById('sectionVerif').classList.toggle('hidden', mode === 'lapor');
+            document.getElementById('tabLaporBtn').className = mode === 'lapor' ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            document.getElementById('tabVerifBtn').className = mode === 'verif' ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            
+            if (mode === 'verif') loadPending();
+        }
 
         function loadPending() {
             const container = document.getElementById('pendingContainer');
-            container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
+            container.innerHTML = "Memuat...";
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
-                    const filteredData = data.filter(item => {
-                        const detailPetugas = dataMapping[item.petugas];
-                        return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
+                    // Filter hanya laporan untuk pengawas yang sedang login
+                    const myPending = data.filter(item => {
+                        const pet = dataMapping[item.petugas];
+                        return pet && pet.pengawas === window.currentUserPengawas;
                     });
-                    container.innerHTML = filteredData.length === 0 ? '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending.</p>' : '';
-                    filteredData.forEach(item => {
+                    
+                    container.innerHTML = myPending.length ? "" : "Tidak ada laporan pending.";
+                    myPending.forEach(item => {
                         container.innerHTML += `
-                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs space-y-2">
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs">
                                 <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
-                                <p class="text-gray-500 italic">"${item.catatan}"</p>
-                                <div class="flex space-x-2 pt-1">
-                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">FOTO</a>
-                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">SETUJU</button>
-                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">TOLAK</button>
+                                <p class="italic">"${item.catatan}"</p>
+                                <div class="mt-2 flex space-x-2">
+                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1 rounded">FOTO</a>
+                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1 rounded">SETUJU</button>
+                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1 rounded">TOLAK</button>
                                 </div>
                             </div>`;
                     });
@@ -354,9 +284,15 @@
         }
 
         function doVerify(rowId, status) {
-            fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
+            fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}`, { method: 'POST' })
                 .then(() => { alert("Berhasil!"); loadPending(); });
         }
+
+        function logoutPengawas() { window.currentUserPengawas = null; switchTab('lapor'); }
+
+        // Event listener lainnya...
+        selectLokasi.addEventListener('change', () => document.getElementById('wrapperLokasiLainnya').classList.toggle('hidden', selectLokasi.value !== 'Lainnya...'));
+        selectPekerjaan.addEventListener('change', () => document.getElementById('wrapperLainnya').classList.toggle('hidden', selectPekerjaan.value !== 'Lainnya...'));
     </script>
 </body>
 </html>
