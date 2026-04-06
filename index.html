@@ -71,16 +71,7 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
                     <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                        <option value="">-- Pilih Pekerjaan --</option>
-                        <option value="Mencabut Rumput">Mencabut Rumput</option>
-                        <option value="Menanam Tanaman">Menanam Tanaman</option>
-                        <option value="Menyapu Taman">Menyapu Taman</option>
-                        <option value="Membersihkan Sampah">Membersihkan Sampah</option>
-                        <option value="Memotong Rumput">Memotong Rumput</option>
-                        <option value="Memangkas Pohon">Memangkas Pohon</option>
-                        <option value="Menyiram Tanaman">Menyiram Tanaman</option>
-                        <option value="Memupuk Tanaman">Memupuk Tanaman</option>
-                        <option value="Lainnya...">Lainnya...</option>
+                        <option value="">-- Memuat Pekerjaan... --</option>
                     </select>
                 </div>
 
@@ -114,7 +105,7 @@
             </div>
         </div>
 
-        <div id="status" class="text-center text-sm font-medium pt-2 px-6"></div>
+        <div id="status" class="text-center text-sm font-medium pt-2 px-6 text-red-500"></div>
 
         <footer class="text-center py-6 text-gray-400 text-xs mt-auto">
             &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
@@ -122,7 +113,8 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbykefP5BH8q7bjQkzal_4NQvTVeR9xst2wec0l-s2pz6p_iHg841Y4Qd133GIF2xES-qg/exec';
+        // MASUKKAN URL WEB APP GOOGLE SCRIPT ANDA DI SINI
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyJQwWptUaaCLiDgN1W3wUjQ9wQFHgQBsF9DtwK_qlBQ-S7gvyseKALsGy5Is1NINlbSQ/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -140,10 +132,72 @@
         const previewContainer = document.getElementById('previewContainer');
         const imagePreview = document.getElementById('imagePreview');
 
-        let dataMapping = {}; 
+        let dataMaster = {}; 
         window.currentUserPengawas = null;
 
-        // LOGIKA BARU: MENAMPILKAN PRATINJAU FOTO
+        // LOAD DATA AWAL (PETUGAS & PEKERJAAN)
+        window.onload = function() {
+            fetch(scriptURL)
+                .then(res => res.json())
+                .then(data => {
+                    dataMaster = data; // Struktur: {petugas: {...}, pekerjaan: [...]}
+                    
+                    // 1. Isi Dropdown Petugas
+                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
+                    Object.keys(data.petugas).sort().forEach(nama => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = nama;
+                        selectPetugas.add(opt);
+                    });
+
+                    // 2. Isi Dropdown Pekerjaan
+                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
+                    data.pekerjaan.forEach(pks => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = pks;
+                        selectPekerjaan.add(opt);
+                    });
+                    const optLain = document.createElement('option');
+                    optLain.value = optLain.text = "Lainnya...";
+                    selectPekerjaan.add(optLain);
+                })
+                .catch(err => { status.innerHTML = "Gagal memuat data master."; });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
+                });
+            }
+        };
+
+        // EVENT: SAAT NAMA PETUGAS DIPILIH (Pecah Lokasi dengan Koma)
+        selectPetugas.addEventListener('change', function() {
+            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
+            inputPengawas.value = "";
+            
+            if (this.value && dataMaster.petugas[this.value]) {
+                const info = dataMaster.petugas[this.value];
+                
+                // Pecah lokasi berdasarkan koma
+                let daftarLokasi = info.lokasi.split(',');
+                
+                daftarLokasi.forEach(loc => {
+                    if(loc.trim()){
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = loc.trim();
+                        selectLokasi.add(opt);
+                    }
+                });
+
+                const optLainnya = document.createElement('option');
+                optLainnya.value = optLainnya.text = "Lainnya...";
+                selectLokasi.add(optLainnya);
+
+                inputPengawas.value = info.pengawas || "-";
+            }
+        });
+
+        // TAMPILAN PREVIEW FOTO
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -153,11 +207,10 @@
                     previewContainer.classList.remove('hidden');
                 }
                 reader.readAsDataURL(file);
-            } else {
-                previewContainer.classList.add('hidden');
             }
         });
 
+        // KOMPRESI FOTO
         async function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -170,129 +223,37 @@
                         let width = img.width;
                         let height = img.height;
                         const maxSide = 1000;
-                        if (width > height) {
-                            if (width > maxSide) { height *= maxSide / width; width = maxSide; }
-                        } else {
-                            if (height > maxSide) { width *= maxSide / height; height = maxSide; }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
+                        if (width > height && width > maxSide) { height *= maxSide / width; width = maxSide; }
+                        else if (height > maxSide) { width *= maxSide / height; height = maxSide; }
+                        canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        resolve(dataUrl.split(',')[1]); 
+                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]); 
                     };
                 };
             });
         }
 
+        // LOGIKA DROPDOWN "LAINNYA"
         selectLokasi.addEventListener('change', function() {
-            if (this.value === "Lainnya..." || this.value === "LAINNYA") {
-                wrapperLokasiLainnya.classList.remove('hidden');
-                lokasiManual.setAttribute('required', 'true');
-                lokasiManual.focus();
-            } else {
-                wrapperLokasiLainnya.classList.add('hidden');
-                lokasiManual.removeAttribute('required');
-                lokasiManual.value = "";
-            }
+            wrapperLokasiLainnya.classList.toggle('hidden', this.value !== "Lainnya...");
+            lokasiManual.required = this.value === "Lainnya...";
         });
 
         selectPekerjaan.addEventListener('change', function() {
-            if (this.value === "Lainnya...") {
-                wrapperLainnya.classList.remove('hidden');
-                catatanManual.setAttribute('required', 'true');
-            } else {
-                wrapperLainnya.classList.add('hidden');
-                catatanManual.removeAttribute('required');
-                catatanManual.value = "";
-            }
+            wrapperLainnya.classList.toggle('hidden', this.value !== "Lainnya...");
+            catatanManual.required = this.value === "Lainnya...";
         });
 
-        function logoutPengawas() {
-            window.currentUserPengawas = null;
-            switchTab('lapor');
-            alert("Sesi pengawas berakhir.");
-        }
-
-        async function switchTab(mode) {
-            const isLapor = mode === 'lapor';
-            if (!isLapor && !window.currentUserPengawas) {
-                try {
-                    const res = await fetch(scriptURL + "?action=getAuthPengawas");
-                    const authData = await res.json();
-                    const namaInput = prompt("Masukkan Nama Pengawas:");
-                    if (authData[namaInput]) {
-                        const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
-                        if (pinInput === authData[namaInput]) {
-                            window.currentUserPengawas = namaInput;
-                        } else { alert("❌ PIN Salah!"); return; }
-                    } else { alert("❌ Nama Pengawas tidak terdaftar!"); return; }
-                } catch (err) { alert("Gagal memverifikasi identitas."); return; }
-            }
-            document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
-            document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
-            document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-            document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-            if (!isLapor) loadPending();
-        }
-
-        window.onload = function() {
-            fetch(scriptURL)
-                .then(res => res.json())
-                .then(data => {
-                    dataMapping = data;
-                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
-                    Object.keys(data).sort().forEach(nama => {
-                        const opt = document.createElement('option');
-                        opt.value = opt.text = nama;
-                        selectPetugas.add(opt);
-                    });
-                })
-                .catch(err => { status.innerHTML = "Gagal memuat daftar petugas."; });
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
-                });
-            }
-        };
-
-        selectPetugas.addEventListener('change', function() {
-            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
-            inputPengawas.value = "";
-            
-            if (this.value && dataMapping[this.value]) {
-                let daftarAsli = dataMapping[this.value].lokasi;
-                let lokasiTaman = daftarAsli.filter(loc => {
-                    return loc.trim() !== "Lainnya..." && loc.trim() !== "LAINNYA";
-                });
-
-                lokasiTaman.sort().forEach(loc => {
-                    const opt = document.createElement('option');
-                    opt.value = opt.text = loc;
-                    selectLokasi.add(opt);
-                });
-
-                const optLainnya = document.createElement('option');
-                optLainnya.value = optLainnya.text = "Lainnya...";
-                selectLokasi.add(optLainnya);
-
-                inputPengawas.value = dataMapping[this.value].pengawas || "-";
-            }
-        });
-
+        // SUBMIT FORM
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btn.disabled = true;
             btn.innerHTML = `<span>Mengirim...</span>`;
             
-            const file = inputFoto.files[0];
-            
             try {
-                const bytes = await compressImage(file);
-                
-                let isiLokasi = (selectLokasi.value === "Lainnya..." || selectLokasi.value === "LAINNYA") ? lokasiManual.value : selectLokasi.value;
+                const bytes = await compressImage(inputFoto.files[0]);
+                let isiLokasi = selectLokasi.value === "Lainnya..." ? lokasiManual.value : selectLokasi.value;
                 let isiCatatan = selectPekerjaan.value === "Lainnya..." ? catatanManual.value : selectPekerjaan.value;
 
                 const params = {
@@ -304,7 +265,6 @@
                 };
                 
                 const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
-
                 const response = await fetch(finalUrl, {
                     method: 'POST',
                     body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
@@ -313,9 +273,7 @@
                 if (response.ok) {
                     successMsg.classList.remove('hidden');
                     form.reset();
-                    previewContainer.classList.add('hidden'); // Sembunyikan preview setelah kirim
-                    wrapperLainnya.classList.add('hidden');
-                    wrapperLokasiLainnya.classList.add('hidden');
+                    previewContainer.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
                     setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
@@ -327,6 +285,24 @@
             }
         });
 
+        // TAB SWITCH & VERIFIKASI (TETAP SAMA)
+        async function switchTab(mode) {
+            const isLapor = mode === 'lapor';
+            if (!isLapor && !window.currentUserPengawas) {
+                const namaInput = prompt("Masukkan Nama Pengawas:");
+                if (namaInput) {
+                    const pinInput = prompt(`Halo ${namaInput}, masukkan PIN (Default: 1234):`);
+                    if (pinInput === "1234") { window.currentUserPengawas = namaInput; } 
+                    else { alert("PIN Salah!"); return; }
+                } else return;
+            }
+            document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
+            document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
+            document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            if (!isLapor) loadPending();
+        }
+
         function loadPending() {
             const container = document.getElementById('pendingContainer');
             container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
@@ -334,8 +310,8 @@
                 .then(res => res.json())
                 .then(data => {
                     const filteredData = data.filter(item => {
-                        const detailPetugas = dataMapping[item.petugas];
-                        return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
+                        const detail = dataMaster.petugas[item.petugas];
+                        return detail && detail.pengawas === window.currentUserPengawas;
                     });
                     container.innerHTML = filteredData.length === 0 ? '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending.</p>' : '';
                     filteredData.forEach(item => {
@@ -346,7 +322,6 @@
                                 <div class="flex space-x-2 pt-1">
                                     <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">FOTO</a>
                                     <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">SETUJU</button>
-                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">TOLAK</button>
                                 </div>
                             </div>`;
                     });
@@ -357,6 +332,8 @@
             fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
                 .then(() => { alert("Berhasil!"); loadPending(); });
         }
+        
+        function logoutPengawas() { window.currentUserPengawas = null; switchTab('lapor'); }
     </script>
 </body>
 </html>
