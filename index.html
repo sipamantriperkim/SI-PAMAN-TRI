@@ -54,7 +54,7 @@
                 <div id="wrapperLokasiLainnya" class="hidden">
                     <label class="block text-sm font-semibold text-gray-700 mb-1 italic text-green-700">Tulis Nama Lokasi Baru:</label>
                     <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi di sini..." 
-                        class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm border-green-200">
+                        class="w-full p-3 border-2 border-green-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm">
                 </div>
 
                 <div>
@@ -71,16 +71,7 @@
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
                     <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
-                        <option value="">-- Pilih Pekerjaan --</option>
-                        <option value="Mencabut Rumput">Mencabut Rumput</option>
-                        <option value="Menanam Tanaman">Menanam Tanaman</option>
-                        <option value="Menyapu Taman">Menyapu Taman</option>
-                        <option value="Membersihkan Sampah">Membersihkan Sampah</option>
-                        <option value="Memotong Rumput">Memotong Rumput</option>
-                        <option value="Memangkas Pohon">Memangkas Pohon</option>
-                        <option value="Menyiram Tanaman">Menyiram Tanaman</option>
-                        <option value="Memupuk Tanaman">Memupuk Tanaman</option>
-                        <option value="Lainnya...">Lainnya...</option>
+                        <option value="">-- Memuat Pekerjaan... --</option>
                     </select>
                 </div>
 
@@ -122,7 +113,7 @@
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbykefP5BH8q7bjQkzal_4NQvTVeR9xst2wec0l-s2pz6p_iHg841Y4Qd133GIF2xES-qg/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbwyXgZTn2vvnpyHQQ-RxteUhM3XIxtqFSOZ-CawMsU0gFcNSEm0d9dBUXxM2vzFi97_/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -143,18 +134,31 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // LOGIKA BARU: MENAMPILKAN PRATINJAU FOTO
+        // 1. FUNGSI: MUAT PEKERJAAN DARI SPREADSHEET
+        function loadPekerjaan() {
+            fetch(scriptURL + "?action=getReferensiPekerjaan")
+                .then(res => res.json())
+                .then(daftar => {
+                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
+                    daftar.forEach(pjk => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = pjk;
+                        selectPekerjaan.add(opt);
+                    });
+                    const optLainnya = document.createElement('option');
+                    optLainnya.value = optLainnya.text = "Lainnya...";
+                    selectPekerjaan.add(optLainnya);
+                })
+                .catch(err => console.log("Gagal muat referensi pekerjaan"));
+        }
+
+        // 2. PRATINJAU FOTO & KOMPRESI
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                    previewContainer.classList.remove('hidden');
-                }
+                reader.onload = (e) => { imagePreview.src = e.target.result; previewContainer.classList.remove('hidden'); }
                 reader.readAsDataURL(file);
-            } else {
-                previewContainer.classList.add('hidden');
             }
         });
 
@@ -167,76 +171,20 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        let width = img.width;
-                        let height = img.height;
+                        let width = img.width; let height = img.height;
                         const maxSide = 1000;
-                        if (width > height) {
-                            if (width > maxSide) { height *= maxSide / width; width = maxSide; }
-                        } else {
-                            if (height > maxSide) { width *= maxSide / height; height = maxSide; }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
+                        if (width > height) { if (width > maxSide) { height *= maxSide / width; width = maxSide; } }
+                        else { if (height > maxSide) { width *= maxSide / height; height = maxSide; } }
+                        canvas.width = width; canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-                        resolve(dataUrl.split(',')[1]); 
+                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]); 
                     };
                 };
             });
         }
 
-        selectLokasi.addEventListener('change', function() {
-            if (this.value === "Lainnya..." || this.value === "LAINNYA") {
-                wrapperLokasiLainnya.classList.remove('hidden');
-                lokasiManual.setAttribute('required', 'true');
-                lokasiManual.focus();
-            } else {
-                wrapperLokasiLainnya.classList.add('hidden');
-                lokasiManual.removeAttribute('required');
-                lokasiManual.value = "";
-            }
-        });
-
-        selectPekerjaan.addEventListener('change', function() {
-            if (this.value === "Lainnya...") {
-                wrapperLainnya.classList.remove('hidden');
-                catatanManual.setAttribute('required', 'true');
-            } else {
-                wrapperLainnya.classList.add('hidden');
-                catatanManual.removeAttribute('required');
-                catatanManual.value = "";
-            }
-        });
-
-        function logoutPengawas() {
-            window.currentUserPengawas = null;
-            switchTab('lapor');
-            alert("Sesi pengawas berakhir.");
-        }
-
-        async function switchTab(mode) {
-            const isLapor = mode === 'lapor';
-            if (!isLapor && !window.currentUserPengawas) {
-                try {
-                    const res = await fetch(scriptURL + "?action=getAuthPengawas");
-                    const authData = await res.json();
-                    const namaInput = prompt("Masukkan Nama Pengawas:");
-                    if (authData[namaInput]) {
-                        const pinInput = prompt(`Halo ${namaInput}, masukkan PIN Anda:`);
-                        if (pinInput === authData[namaInput]) {
-                            window.currentUserPengawas = namaInput;
-                        } else { alert("❌ PIN Salah!"); return; }
-                    } else { alert("❌ Nama Pengawas tidak terdaftar!"); return; }
-                } catch (err) { alert("Gagal memverifikasi identitas."); return; }
-            }
-            document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
-            document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
-            document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-            document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
-            if (!isLapor) loadPending();
-        }
-
+        // 3. LOGIKA ONLOAD (DATA PETUGAS & GPS)
         window.onload = function() {
             fetch(scriptURL)
                 .then(res => res.json())
@@ -248,105 +196,118 @@
                         opt.value = opt.text = nama;
                         selectPetugas.add(opt);
                     });
-                })
-                .catch(err => { status.innerHTML = "Gagal memuat daftar petugas."; });
-
+                });
+            loadPekerjaan();
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(function(position) {
-                    document.getElementById('gps').value = position.coords.latitude + "," + position.coords.longitude;
+                navigator.geolocation.getCurrentPosition(pos => {
+                    document.getElementById('gps').value = pos.coords.latitude + "," + pos.coords.longitude;
                 });
             }
         };
 
+        // 4. LOGIKA PILIH PETUGAS (PECAH LOKASI KOMA)
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
-            inputPengawas.value = "";
-            
             if (this.value && dataMapping[this.value]) {
-                let daftarAsli = dataMapping[this.value].lokasi;
-                let lokasiTaman = daftarAsli.filter(loc => {
-                    return loc.trim() !== "Lainnya..." && loc.trim() !== "LAINNYA";
+                let lokasiData = dataMapping[this.value].lokasi;
+                let listLokasi = Array.isArray(lokasiData) ? lokasiData : lokasiData.split(',');
+                listLokasi.forEach(loc => {
+                    let nama = loc.trim();
+                    if (nama && nama.toUpperCase() !== "LAINNYA") {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = nama;
+                        selectLokasi.add(opt);
+                    }
                 });
-
-                lokasiTaman.sort().forEach(loc => {
-                    const opt = document.createElement('option');
-                    opt.value = opt.text = loc;
-                    selectLokasi.add(opt);
-                });
-
                 const optLainnya = document.createElement('option');
                 optLainnya.value = optLainnya.text = "Lainnya...";
                 selectLokasi.add(optLainnya);
-
                 inputPengawas.value = dataMapping[this.value].pengawas || "-";
             }
         });
 
+        // 5. LOGIKA TOGGLE INPUT MANUAL
+        selectLokasi.addEventListener('change', function() {
+            const isManual = this.value === "Lainnya...";
+            wrapperLokasiLainnya.classList.toggle('hidden', !isManual);
+            lokasiManual.required = isManual;
+        });
+        selectPekerjaan.addEventListener('change', function() {
+            const isManual = this.value === "Lainnya...";
+            wrapperLainnya.classList.toggle('hidden', !isManual);
+            catatanManual.required = isManual;
+        });
+
+        // 6. KIRIM FORM
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btn.disabled = true;
-            btn.innerHTML = `<span>Mengirim...</span>`;
-            
-            const file = inputFoto.files[0];
-            
+            btn.innerHTML = "<span>Mengirim...</span>";
             try {
-                const bytes = await compressImage(file);
-                
-                let isiLokasi = (selectLokasi.value === "Lainnya..." || selectLokasi.value === "LAINNYA") ? lokasiManual.value : selectLokasi.value;
-                let isiCatatan = selectPekerjaan.value === "Lainnya..." ? catatanManual.value : selectPekerjaan.value;
-
-                const params = {
+                const bytes = await compressImage(inputFoto.files[0]);
+                const params = new URLSearchParams({
                     petugas: selectPetugas.value,
-                    lokasi: isiLokasi,
-                    catatan: isiCatatan,
+                    lokasi: selectLokasi.value === "Lainnya..." ? lokasiManual.value : selectLokasi.value,
+                    catatan: selectPekerjaan.value === "Lainnya..." ? catatanManual.value : selectPekerjaan.value,
                     gps: document.getElementById('gps').value,
                     pengawas: inputPengawas.value
-                };
-                
-                const finalUrl = `${scriptURL}?${new URLSearchParams(params).toString()}`;
-
-                const response = await fetch(finalUrl, {
+                });
+                const response = await fetch(`${scriptURL}?${params.toString()}`, {
                     method: 'POST',
                     body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
                 });
-
                 if (response.ok) {
                     successMsg.classList.remove('hidden');
                     form.reset();
-                    previewContainer.classList.add('hidden'); // Sembunyikan preview setelah kirim
-                    wrapperLainnya.classList.add('hidden');
-                    wrapperLokasiLainnya.classList.add('hidden');
+                    previewContainer.classList.add('hidden');
                     btn.disabled = false;
                     btn.innerHTML = "KIRIM LAPORAN";
-                    setTimeout(() => { successMsg.classList.add('hidden'); }, 5000);
+                    setTimeout(() => successMsg.classList.add('hidden'), 5000);
                 }
             } catch (err) {
-                status.innerHTML = "❌ Gagal Mengirim: " + err;
+                alert("Error: " + err);
                 btn.disabled = false;
                 btn.innerHTML = "KIRIM LAPORAN";
             }
         });
 
+        // 7. FUNGSI TAB & VERIFIKASI
+        async function switchTab(mode) {
+            const isLapor = mode === 'lapor';
+            if (!isLapor && !window.currentUserPengawas) {
+                const res = await fetch(scriptURL + "?action=getAuthPengawas");
+                const auth = await res.json();
+                const nama = prompt("Nama Pengawas:");
+                if (auth[nama]) {
+                    const pin = prompt("PIN:");
+                    if (pin === auth[nama]) window.currentUserPengawas = nama;
+                    else { alert("PIN Salah!"); return; }
+                } else { alert("Tidak terdaftar!"); return; }
+            }
+            document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
+            document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
+            document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            if (!isLapor) loadPending();
+        }
+
         function loadPending() {
             const container = document.getElementById('pendingContainer');
-            container.innerHTML = '<p class="text-center text-gray-400 py-10 italic">Memuat data...</p>';
+            container.innerHTML = "Memuat...";
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
-                    const filteredData = data.filter(item => {
-                        const detailPetugas = dataMapping[item.petugas];
-                        return detailPetugas && detailPetugas.pengawas === window.currentUserPengawas;
-                    });
-                    container.innerHTML = filteredData.length === 0 ? '<p class="text-center text-gray-400 py-10 italic">Tidak ada laporan pending.</p>' : '';
-                    filteredData.forEach(item => {
+                    const filtered = data.filter(item => dataMapping[item.petugas]?.pengawas === window.currentUserPengawas);
+                    container.innerHTML = filtered.length ? '' : '<p class="text-center py-10">Kosong.</p>';
+                    filtered.forEach(item => {
                         container.innerHTML += `
-                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 shadow-sm text-xs space-y-2">
+                            <div class="bg-gray-50 p-4 rounded-xl border-l-4 border-yellow-500 text-xs space-y-2">
                                 <p><strong>${item.petugas}</strong> - ${item.lokasi}</p>
-                                <p class="text-gray-500 italic">"${item.catatan}"</p>
-                                <div class="flex space-x-2 pt-1">
-                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">FOTO</a>
-                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">SETUJU</button>
-                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold text-[10px]">TOLAK</button>
+                                <p class="italic">"${item.catatan}"</p>
+                                <div class="flex space-x-2">
+                                    <a href="${item.foto}" target="_blank" class="bg-blue-500 text-white px-3 py-1.5 rounded-md font-bold">FOTO</a>
+                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="bg-green-600 text-white px-3 py-1.5 rounded-md font-bold">SETUJU</button>
+                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="bg-red-500 text-white px-3 py-1.5 rounded-md font-bold">TOLAK</button>
                                 </div>
                             </div>`;
                     });
@@ -355,8 +316,10 @@
 
         function doVerify(rowId, status) {
             fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
-                .then(() => { alert("Berhasil!"); loadPending(); });
+                .then(() => loadPending());
         }
+
+        function logoutPengawas() { window.currentUserPengawas = null; switchTab('lapor'); }
     </script>
 </body>
 </html>
