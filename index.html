@@ -84,7 +84,6 @@
 
                 <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center animate-bounce">
                     <p class="font-bold">✅ LAPORAN BERHASIL TERKIRIM!</p>
-                    <p class="text-xs mt-1 italic text-green-600">Menunggu verifikasi pengawas...</p>
                 </div>
             </form>
         </div>
@@ -100,12 +99,12 @@
         </div>
 
         <footer class="text-center py-6 text-gray-400 text-xs mt-auto">
-            &copy; 2026 SI-PAMAN TRI - Kab. Barito Selatan
+            &copy; 2026 SI-PAMAN TRI - Kab. Barito Barsel
         </footer>
     </div>
 
     <script>
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbx3q-Ol78_PpVY0vmcVJgdbFzUJoAWyoJ5WJhnPOA8SOY2qm04X3JyMdm289J8QP_wmYg/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbyIl8D0aKVmhFjBBJMwqJ-bMUoNMDCnPrgNbPNahXMpZLiUe-ElQNm8QvPMUHKs59HMRg/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -123,7 +122,6 @@
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // 1. FUNGSI: MUAT PEKERJAAN (Hapus Pilihan "Lainnya...")
         function loadPekerjaan() {
             fetch(scriptURL + "?action=getReferensiPekerjaan")
                 .then(res => res.json())
@@ -134,11 +132,9 @@
                         opt.value = opt.text = pjk;
                         selectPekerjaan.add(opt);
                     });
-                })
-                .catch(err => console.log("Gagal muat referensi pekerjaan"));
+                });
         }
 
-        // 2. PRATINJAU FOTO & KOMPRESI
         inputFoto.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
@@ -170,7 +166,6 @@
             });
         }
 
-        // 3. LOGIKA ONLOAD
         window.onload = function() {
             fetch(scriptURL)
                 .then(res => res.json())
@@ -191,7 +186,6 @@
             }
         };
 
-        // 4. LOGIKA PILIH PETUGAS
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
             if (this.value && dataMapping[this.value]) {
@@ -212,14 +206,12 @@
             }
         });
 
-        // 5. LOGIKA TOGGLE INPUT MANUAL LOKASI
         selectLokasi.addEventListener('change', function() {
             const isManual = this.value === "Lainnya...";
             wrapperLokasiLainnya.classList.toggle('hidden', !isManual);
             lokasiManual.required = isManual;
         });
 
-        // 6. KIRIM FORM
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btn.disabled = true;
@@ -252,7 +244,6 @@
             }
         });
 
-        // 7. VERIFIKASI (TETAP SAMA)
         async function switchTab(mode) {
             const isLapor = mode === 'lapor';
             if (!isLapor && !window.currentUserPengawas) {
