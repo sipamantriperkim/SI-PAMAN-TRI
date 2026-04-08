@@ -3,135 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SI-PAMAN TRI</title>
+    <title>SI-PAMAN TRI | DISPERKIMTAN Barito Selatan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { background: #f4f7f4; font-family: sans-serif; }
-        .bg-green-main { background: #2e7d32; }
-        .text-green-main { color: #2e7d32; }
-        .border-green-main { border-color: #2e7d32; }
-        
-        /* Style untuk ikon bulat kecil di sebelah label */
-        .icon-label {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 22px;
-            height: 22px;
-            border: 1.5px solid #2e7d32;
-            border-radius: 50%;
-            margin-left: 6px;
-            color: #2e7d32;
-            padding: 3px;
-        }
-
-        /* Style tombol pilih file seperti di gambar */
-        .btn-pilih-file {
-            background: #f0faf0;
-            color: #2e7d32;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 13px;
-            cursor: pointer;
-            border: none;
-        }
+        :root { --primary: #2e7d32; --secondary: #4caf50; }
+        body { background: #f0f4f0; }
+        .bg-green-custom { background-color: var(--primary); }
+        .btn-submit { background-color: var(--primary); transition: 0.3s; }
+        .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
+        .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .loader-spin { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
-<body class="antialiased">
+<body class="font-sans antialiased text-gray-900">
 
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg relative flex flex-col">
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative flex flex-col">
         
-        <div class="bg-green-main p-10 text-white text-center rounded-b-[45px] shadow-md relative overflow-hidden">
-            <div class="absolute top-0 left-0 opacity-10 p-4">
-                <svg width="100" height="100" viewBox="0 0 24 24" fill="white"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
+        <div class="bg-green-custom p-8 text-white text-center rounded-b-[30px] shadow-lg">
+            <div class="flex justify-center mb-3">
+                <svg class="w-16 h-16 text-green-300" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z" />
+                </svg>
             </div>
-            
-            <div class="flex justify-center mb-2">
-                <svg class="w-14 h-14" viewBox="0 0 24 24" fill="white"><path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z"/></svg>
-            </div>
-            <h1 class="text-3xl font-bold tracking-tight">SI-PAMAN TRI</h1>
-            <p class="text-[11px] opacity-80 mt-1 uppercase tracking-wider font-light">Sistem Pelaporan Petugas Taman Terintegrasi</p>
+            <h1 class="text-3xl font-extrabold tracking-tight">SI-PAMAN TRI</h1>
+            <p class="text-sm opacity-90 mt-1 font-light italic">Sistem Pelaporan Petugas Taman Terintegrasi</p>
         </div>
 
-        <div class="flex p-1 bg-gray-50 mx-6 -mt-6 rounded-xl shadow-sm border border-gray-100 relative z-20">
-            <button class="flex-1 py-3 text-xs font-bold text-green-700 bg-white rounded-lg shadow-sm flex items-center justify-center border-b-2 border-green-700">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                LAPOR
-            </button>
-            <button class="flex-1 py-3 text-xs font-bold text-gray-400 flex items-center justify-center">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                VERIFIKASI
-            </button>
+        <div class="flex p-2 bg-gray-100 mx-6 mt-4 rounded-xl space-x-2">
+            <button onclick="switchTab('lapor')" id="tabLaporBtn" class="flex-1 py-2 text-xs rounded-lg tab-active">LAPOR</button>
+            <button onclick="switchTab('verif')" id="tabVerifBtn" class="flex-1 py-2 text-xs rounded-lg text-gray-500 transition-all">VERIFIKASI</button>
         </div>
 
-        <form class="p-6 space-y-5">
-            <div>
-                <label class="flex items-center text-sm font-bold text-gray-700 mb-2">
-                    Nama Petugas 
-                    <span class="icon-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    </span>
-                </label>
-                <select class="w-full p-3 border rounded-xl bg-white text-gray-500 text-sm focus:outline-none focus:border-green-600 appearance-none">
-                    <option>-- Pilih Nama --</option>
-                </select>
-            </div>
+        <div id="sectionLapor">
+            <form id="reportForm" class="p-6 space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
+                    <select id="petugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                        <option value="">-- Memuat Nama... --</option>
+                    </select>
+                </div>
 
-            <div>
-                <label class="flex items-center text-sm font-bold text-gray-700 mb-2">
-                    Lokasi Taman
-                    <span class="icon-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4.5 8-11.8A8 8 0 004 10.2c0 7.3 8 11.8 8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
-                    </span>
-                </label>
-                <select class="w-full p-3 border rounded-xl bg-white text-gray-500 text-sm focus:outline-none focus:border-green-600 appearance-none">
-                    <option>-- Pilih Nama Petugas Dulu --</option>
-                </select>
-            </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Taman</label>
+                    <select id="lokasi" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                        <option value="">-- Pilih Nama Petugas Dulu --</option>
+                    </select>
+                </div>
 
-            <div>
-                <label class="flex items-center text-sm font-bold text-gray-700 mb-2">
-                    Ambil Foto Pekerjaan
-                    <span class="icon-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                    </span>
-                </label>
-                <div class="border-2 border-dashed border-gray-300 rounded-xl p-4 flex items-center relative overflow-hidden">
-                    <input type="file" class="absolute inset-0 opacity-0 cursor-pointer">
-                    <button type="button" class="btn-pilih-file mr-3">Pilih File</button>
-                    <span class="text-xs text-gray-400">Tidak ada file yang dipilih</span>
+                <div id="wrapperLokasiLainnya" class="hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1 italic text-green-700">Tulis Nama Lokasi Baru:</label>
+                    <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi..." 
+                        class="w-full p-3 border-2 border-green-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
+                    <input type="file" id="foto" accept="image/*" capture="environment" required 
+                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
                     
-                    <div class="absolute right-4 opacity-5">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="black"><circle cx="12" cy="12" r="10"/><path d="M12 8v8m-4-4h8" stroke="white"/></svg>
+                    <div id="previewContainer" class="hidden mt-3 p-2 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center">
+                        <p class="text-[10px] text-gray-400 mb-1 uppercase font-bold text-center">Preview Foto:</p>
+                        <img id="imagePreview" src="" class="max-h-48 rounded-lg shadow-md border border-white">
                     </div>
                 </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
+                    <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
+                        <option value="">-- Memuat Pekerjaan... --</option>
+                    </select>
+                </div>
+
+                <input type="hidden" id="gps">
+                <input type="hidden" id="pengawasOtomatis">
+
+                <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
+                    <span>KIRIM LAPORAN</span>
+                </button>
+
+                <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center animate-bounce">
+                    <p class="font-bold">✅ LAPORAN BERHASIL TERKIRIM!</p>
+                </div>
+            </form>
+        </div>
+
+        <div id="sectionVerif" class="hidden p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
+                <div>
+                    <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Antrean Verifikasi</h2>
+                    <p id="labelLoginAs" class="text-[10px] text-green-600 font-bold italic"></p>
+                </div>
+                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-200">KELUAR</button>
             </div>
-
-            <div>
-                <label class="flex items-center text-sm font-bold text-gray-700 mb-2">
-                    Jenis Pekerjaan
-                    <span class="icon-label">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg>
-                    </span>
-                </label>
-                <select class="w-full p-3 border rounded-xl bg-white text-gray-500 text-sm focus:outline-none focus:border-green-600 appearance-none">
-                    <option>-- Pilih Pekerjaan --</option>
-                </select>
+            <div id="pendingContainer" class="space-y-4 pt-2">
+                <p class="text-center text-gray-400 py-10 italic">Memuat data...</p>
             </div>
+        </div>
 
-            <button class="w-full bg-green-main text-white font-bold py-4 rounded-xl shadow-lg flex justify-center items-center space-x-2 active:scale-95 transition-transform">
-                <span>KIRIM LAPORAN</span>
-                <svg class="w-5 h-5 transform rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-            </button>
-        </form>
-
-        <footer class="text-center py-6 mt-auto">
-            <p class="text-[10px] text-gray-400 font-medium tracking-widest">
-                © 2026 SI-PAMAN TRI - DISPERKIMTAN KAB. BARSEL
-            </p>
+        <footer class="text-center py-6 text-gray-400 text-[10px] mt-auto uppercase tracking-widest">
+            &copy; 2026 SI-PAMAN TRI - DISPERKIMTAN Kab. Barsel
         </footer>
     </div>
 
+    <script>
+        // Mas, pastikan URL Script ini sudah benar sesuai Deployment terbaru di Apps Script
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbzv69vAjup0V1boIms4ym3B5ICu40IIZq3XyXdkVNP448gma61LfwdiEnxxh8P7uoplmQ/exec';
+        
+        const form = document.getElementById('reportForm');
+        const btn = document.getElementById('submitBtn');
+        const selectPetugas = document.getElementById('petugas');
+        const selectLokasi = document.getElementById('lokasi');
+        const selectPekerjaan = document.getElementById('pilihanPekerjaan');
+        const wrapperLokasiLainnya = document.getElementById('wrapperLokasiLainnya');
+        const lokasiManual = document.getElementById('lokasiManual');
+        const inputPengawas = document.getElementById('pengawasOtomatis');
+        const successMsg = document.getElementById('successMessage');
+        const inputFoto = document.getElementById('foto');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+
+        let dataMapping = {}; 
+        window.currentUserPengawas = null;
+
+        // --- FUNGSI LOAD AWAL ---
+        window.onload = function() {
+            // Load Petugas & Lokasi
+            fetch(scriptURL)
+                .then(res => res.json())
+                .then(data => {
+                    dataMapping = data;
+                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
+                    Object.keys(data).sort().forEach(nama => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = nama;
+                        selectPetugas.add(opt);
+                    });
+                });
+
+            // Load Daftar Pekerjaan
+            fetch(scriptURL + "?action=getReferensiPekerjaan")
+                .then(res => res.json())
+                .then(daftar => {
+                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
+                    daftar.forEach(pjk => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = pjk;
+                        selectPekerjaan.add(opt);
+                    });
+                });
+
+            // GPS
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    document.getElementById('gps').value = pos.coords.latitude + "," + pos.coords.longitude;
+                }, err => { console.warn("GPS Dimatikan user"); });
+            }
+        };
+
+        // --- INTERAKSI FORM ---
+        selectPetugas.addEventListener('change', function() {
+            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
+            if (this.value && dataMapping[this.value]) {
+                let listLokasi = dataMapping[this.value].lokasi;
+                listLokasi.forEach(loc => {
+                    const opt = document.createElement('option');
+                    opt.value = opt.text = loc.trim();
+                    selectLokasi.add(opt);
+                });
+                const optLainnya = document.createElement('option');
+                optLainnya.value = "Lainnya..."; optLainnya.text = "Lainnya...";
+                selectLokasi.add(optLainnya);
+                inputPengawas.value = dataMapping[this.value].pengawas || "BERKAT";
+            }
+        });
+
+        selectLokasi.addEventListener('change', function() {
+            const isManual = this.value === "Lainnya...";
+            wrapperLokasiLainnya.classList.toggle('hidden', !isManual);
+            lokasiManual.required = isManual;
+        });
+
+        inputFoto.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => { imagePreview.src = e.target.result; previewContainer.classList.remove('hidden'); }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- KIRIM DATA ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.innerHTML = "<span>MENGIRIM...</span>";
+            
+            try {
+                const bytes = await compressImage(inputFoto.files[0]);
+                const params = new URLSearchParams({
+                    petugas: selectPetugas.value,
+                    lokasi: selectLokasi.value === "Lainnya..." ? lokasiManual.value : selectLokasi.value,
+                    catatan: selectPekerjaan.value,
+                    gps: document.getElementById('gps').value,
+                    pengawas: inputPengawas.value
+                });
+
+                const response = await fetch(`${scriptURL}?${params.toString()}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
+                });
+
+                if (response.ok) {
+                    successMsg.classList.remove('hidden');
+                    form.reset();
+                    previewContainer.classList.add('hidden');
+                    setTimeout(() => successMsg.classList.add('hidden'), 5000);
+                }
+            } catch (err) {
+                alert("Gagal mengirim laporan: " + err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "KIRIM LAPORAN";
+            }
+        });
+
+        // --- SISTEM VERIFIKASI (PENGAWAS) ---
+        async function switchTab(mode) {
+            const isLapor = mode === 'lapor';
+            
+            if (!isLapor && !window.currentUserPengawas) {
+                const res = await fetch(scriptURL + "?action=getAuthPengawas");
+                const auth = await res.json();
+                
+                let inputNama = prompt("MASUKKAN NAMA PENGAWAS:");
+                if (!inputNama) return;
+                
+                const namaKey = inputNama.toUpperCase().trim();
+                if (auth[namaKey]) {
+                    const pin = prompt("MASUKKAN PIN KEAMANAN:");
+                    if (pin === auth[namaKey].toString()) {
+                        window.currentUserPengawas = namaKey;
+                        document.getElementById('labelLoginAs').innerText = "Login: " + namaKey;
+                    } else { alert("PIN SALAH!"); return; }
+                } else { alert("NAMA TIDAK TERDAFTAR SEBAGAI PENGAWAS!"); return; }
+            }
+
+            document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
+            document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
+            document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            
+            if (!isLapor) loadPending();
+        }
+
+        function loadPending() {
+            const container = document.getElementById('pendingContainer');
+            container.innerHTML = '<div class="text-center py-10"><div class="inline-block w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full loader-spin"></div><p class="text-xs text-gray-400 mt-2">Mencari laporan...</p></div>';
+            
+            fetch(scriptURL + "?action=getPending")
+                .then(res => res.json())
+                .then(data => {
+                    // Filter: Pengawas hanya melihat petugas yang di bawah tanggung jawabnya
+                    const filtered = data.filter(item => {
+                        const petData = dataMapping[item.petugas];
+                        return petData && petData.pengawas.toString().toUpperCase().trim() === window.currentUserPengawas;
+                    });
+
+                    container.innerHTML = filtered.length ? '' : '<p class="text-center py-10 italic text-gray-400 text-xs">Belum ada laporan masuk untuk Anda.</p>';
+                    
+                    filtered.forEach(item => {
+                        container.innerHTML += `
+                            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-[13px] font-bold text-gray-800">${item.petugas}</p>
+                                        <p class="text-[10px] text-gray-500">📍 ${item.lokasi}</p>
+                                    </div>
+                                    <span class="bg-yellow-100 text-yellow-700 text-[9px] px-2 py-0.5 rounded-full font-bold">PENDING</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 bg-gray-50 p-2 rounded-lg italic">"${item.catatan}"</p>
+                                <div class="flex space-x-2">
+                                    <a href="${item.foto}" target="_blank" class="flex-1 bg-gray-800 text-white text-[10px] py-2 rounded-lg font-bold text-center">LIHAT FOTO</a>
+                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="flex-1 bg-green-600 text-white text-[10px] py-2 rounded-lg font-bold">SETUJU</button>
+                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="flex-1 bg-red-500 text-white text-[10px] py-2 rounded-lg font-bold">TOLAK</button>
+                                </div>
+                            </div>`;
+                    });
+                });
+        }
+
+        function doVerify(rowId, status) {
+            if (!confirm("Konfirmasi " + status + " laporan ini?")) return;
+            const btnTarget = event.target;
+            btnTarget.innerText = "...";
+            btnTarget.disabled = true;
+
+            fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
+                .then(() => loadPending())
+                .catch(err => alert("Gagal verifikasi: " + err));
+        }
+
+        function logoutPengawas() { window.currentUserPengawas = null; switchTab('lapor'); }
+
+        // --- HELPER: KOMPRESI GAMBAR ---
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width; let height = img.height;
+                        const maxSide = 1000;
+                        if (width > height) { if (width > maxSide) { height *= maxSide / width; width = maxSide; } }
+                        else { if (height > maxSide) { width *= maxSide / height; height = maxSide; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]); 
+                    };
+                };
+            });
+        }
+    </script>
 </body>
 </html>
