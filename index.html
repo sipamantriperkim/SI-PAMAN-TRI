@@ -6,77 +6,71 @@
     <title>SI-PAMAN TRI | DISPERKIMTAN Barito Selatan</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        :root { --primary: #1b5e20; --secondary: #2e7d32; }
-        body { background: #f8faf8; }
-        .bg-gradient-green { background: linear-gradient(135deg, #1b5e20 0%, #388e3c 100%); }
-        .btn-submit { background: linear-gradient(135deg, #2e7d32 0%, #43a047 100%); transition: all 0.3s ease; }
-        .btn-submit:active { transform: scale(0.96); opacity: 0.9; }
-        .tab-active { background: white; color: #1b5e20; font-weight: bold; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
-        .card-custom { border-radius: 24px; box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.05); }
+        :root { --primary: #2e7d32; --secondary: #4caf50; }
+        body { background: #f0f4f0; }
+        .bg-green-custom { background-color: var(--primary); }
+        .btn-submit { background-color: var(--primary); transition: 0.3s; }
+        .btn-submit:hover { background-color: var(--secondary); transform: translateY(-2px); }
+        .tab-active { background: white; color: var(--primary); font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .loader-spin { animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: #c8e6c9; border-radius: 10px; }
     </style>
 </head>
 <body class="font-sans antialiased text-gray-900">
 
-    <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative flex flex-col overflow-hidden">
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-2xl relative flex flex-col">
         
-        <div class="bg-gradient-green p-10 text-white text-center rounded-b-[40px] shadow-lg relative">
-            <div class="flex justify-center mb-4">
-                <div class="bg-white/20 p-4 rounded-full backdrop-blur-sm">
-                    <svg class="w-12 h-12 text-green-100" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z" />
-                    </svg>
-                </div>
+        <div class="bg-green-custom p-8 text-white text-center rounded-b-[30px] shadow-lg">
+            <div class="flex justify-center mb-3">
+                <svg class="w-16 h-16 text-green-300" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M17,8C8,10 5.9,16.17 3.82,21.34L5.71,22L6.66,19.7C7.14,19.87 7.64,20 8,20C19,20 22,3 22,3C21,5 14,5.25 9,6.25C4,7.25 2,11.5 2,13.5C2,15.5 3.75,17.25 3.75,17.25C7,8 17,8 17,8Z" />
+                </svg>
             </div>
-            <h1 class="text-3xl font-black tracking-tight leading-none">SI-PAMAN TRI</h1>
-            <p class="text-[11px] opacity-80 mt-2 font-medium tracking-[0.1em] uppercase">Disperkimtan Barito Selatan</p>
+            <h1 class="text-3xl font-extrabold tracking-tight">SI-PAMAN TRI</h1>
+            <p class="text-sm opacity-90 mt-1 font-light italic">Sistem Pelaporan Petugas Taman Terintegrasi</p>
         </div>
 
-        <div class="flex p-1.5 bg-gray-100/80 mx-8 -mt-6 rounded-2xl space-x-1 relative z-20 backdrop-blur-md border border-white/50">
-            <button onclick="switchTab('lapor')" id="tabLaporBtn" class="flex-1 py-2.5 text-[11px] rounded-xl tab-active transition-all duration-300">LAPOR</button>
-            <button onclick="switchTab('verif')" id="tabVerifBtn" class="flex-1 py-2.5 text-[11px] rounded-xl text-gray-500 font-bold transition-all duration-300">VERIFIKASI</button>
+        <div class="flex p-2 bg-gray-100 mx-6 mt-4 rounded-xl space-x-2">
+            <button onclick="switchTab('lapor')" id="tabLaporBtn" class="flex-1 py-2 text-xs rounded-lg tab-active">LAPOR</button>
+            <button onclick="switchTab('verif')" id="tabVerifBtn" class="flex-1 py-2 text-xs rounded-lg text-gray-500 transition-all">VERIFIKASI</button>
         </div>
 
-        <div id="sectionLapor" class="animate-fadeIn">
-            <form id="reportForm" class="p-8 space-y-6">
-                <div class="space-y-1">
-                    <label class="text-[12px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Nama Petugas</label>
-                    <select id="petugas" required class="w-full p-4 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:bg-white outline-none bg-gray-50 transition-all text-sm font-medium">
+        <div id="sectionLapor">
+            <form id="reportForm" class="p-6 space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Petugas</label>
+                    <select id="petugas" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
                         <option value="">-- Memuat Nama... --</option>
                     </select>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-[12px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Lokasi Taman</label>
-                    <select id="lokasi" required class="w-full p-4 border-2 border-gray-100 rounded-2xl focus:border-green-500 focus:bg-white outline-none bg-gray-50 transition-all text-sm font-medium">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Taman</label>
+                    <select id="lokasi" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
                         <option value="">-- Pilih Nama Petugas Dulu --</option>
                     </select>
                 </div>
 
-                <div id="wrapperLokasiLainnya" class="hidden animate-pulse">
-                    <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi baru..." 
-                        class="w-full p-4 border-2 border-green-200 rounded-2xl focus:border-green-500 outline-none bg-green-50/30 text-sm shadow-inner">
+                <div id="wrapperLokasiLainnya" class="hidden">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1 italic text-green-700">Tulis Nama Lokasi Baru:</label>
+                    <input type="text" id="lokasiManual" placeholder="Ketik nama lokasi..." 
+                        class="w-full p-3 border-2 border-green-200 rounded-xl focus:border-green-500 outline-none bg-white shadow-sm">
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-[12px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Foto Pekerjaan</label>
-                    <div class="relative group">
-                        <input type="file" id="foto" accept="image/*" capture="environment" required 
-                            class="w-full text-xs text-gray-400 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-green-600 file:text-white border-2 border-dashed border-gray-200 p-3 rounded-2xl hover:border-green-400 transition-colors">
-                    </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Ambil Foto Pekerjaan</label>
+                    <input type="file" id="foto" accept="image/*" capture="environment" required 
+                        class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 border-2 border-dashed border-gray-300 p-4 rounded-xl">
                     
-                    <div id="previewContainer" class="hidden mt-4 p-2 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col items-center">
-                        <img id="imagePreview" src="" class="max-h-52 rounded-xl shadow-lg border-4 border-white">
+                    <div id="previewContainer" class="hidden mt-3 p-2 bg-gray-50 border border-gray-200 rounded-xl flex flex-col items-center">
+                        <p class="text-[10px] text-gray-400 mb-1 uppercase font-bold text-center">Preview Foto:</p>
+                        <img id="imagePreview" src="" class="max-h-48 rounded-lg shadow-md border border-white">
                     </div>
                 </div>
 
-                <div class="space-y-1">
-                    <label class="text-[12px] font-bold text-gray-500 ml-1 uppercase tracking-wider">Jenis Pekerjaan</label>
-                    <select id="pilihanPekerjaan" required class="w-full p-4 border-2 border-gray-100 rounded-2xl focus:border-green-500 outline-none bg-gray-50 text-sm font-medium">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Jenis Pekerjaan</label>
+                    <select id="pilihanPekerjaan" required class="w-full p-3 border-2 border-gray-200 rounded-xl focus:border-green-500 outline-none bg-gray-50">
                         <option value="">-- Memuat Pekerjaan... --</option>
                     </select>
                 </div>
@@ -84,41 +78,256 @@
                 <input type="hidden" id="gps">
                 <input type="hidden" id="pengawasOtomatis">
 
-                <div class="pt-4">
-                    <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-black py-5 rounded-[22px] shadow-xl shadow-green-900/20 flex justify-center items-center space-x-3 uppercase tracking-widest text-sm">
-                        <span>KIRIM LAPORAN</span>
-                    </button>
-                </div>
+                <button type="submit" id="submitBtn" class="w-full btn-submit text-white font-bold py-4 rounded-2xl shadow-xl flex justify-center items-center space-x-2">
+                    <span>KIRIM LAPORAN</span>
+                </button>
 
-                <div id="successMessage" class="hidden p-4 bg-green-500 text-white rounded-2xl text-center shadow-lg animate-bounce text-xs font-bold">
-                    ✅ LAPORAN BERHASIL TERKIRIM!
+                <div id="successMessage" class="hidden mt-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-xl text-center animate-bounce">
+                    <p class="font-bold">✅ LAPORAN BERHASIL TERKIRIM!</p>
                 </div>
             </form>
         </div>
 
-        <div id="sectionVerif" class="hidden p-8 space-y-5">
-            <div class="flex justify-between items-center bg-gray-50 p-4 rounded-2xl border border-gray-100">
+        <div id="sectionVerif" class="hidden p-6 space-y-4">
+            <div class="flex justify-between items-center border-b pb-3">
                 <div>
-                    <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Pengawas</h2>
-                    <p id="labelLoginAs" class="text-sm text-green-700 font-black"></p>
+                    <h2 class="text-sm font-bold text-gray-600 uppercase tracking-wider">Antrean Verifikasi</h2>
+                    <p id="labelLoginAs" class="text-[10px] text-green-600 font-bold italic"></p>
                 </div>
-                <button onclick="logoutPengawas()" class="text-[10px] bg-red-50 text-red-600 px-4 py-2 rounded-xl font-black hover:bg-red-100 transition-colors">LOGOUT</button>
+                <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-200">KELUAR</button>
             </div>
-            
-            <div id="pendingContainer" class="space-y-4">
-                </div>
+            <div id="pendingContainer" class="space-y-4 pt-2">
+                <p class="text-center text-gray-400 py-10 italic">Memuat data...</p>
+            </div>
         </div>
 
-        <footer class="text-center py-8">
-            <div class="h-[1px] w-12 bg-gray-200 mx-auto mb-4"></div>
-            <p class="text-gray-300 text-[9px] font-bold uppercase tracking-[0.3em]">SI-PAMAN TRI &bull; 2026</p>
+        <footer class="text-center py-6 text-gray-400 text-[10px] mt-auto uppercase tracking-widest">
+            &copy; 2026 SI-PAMAN TRI - DISPERKIMTAN Kab. Barsel
         </footer>
     </div>
 
     <script>
+        // Mas, pastikan URL Script ini sudah benar sesuai Deployment terbaru di Apps Script
         const scriptURL = 'https://script.google.com/macros/s/AKfycbzv69vAjup0V1boIms4ym3B5ICu40IIZq3XyXdkVNP448gma61LfwdiEnxxh8P7uoplmQ/exec';
-        // ... (Gunakan logika script yang Mas berikan tadi, sudah sangat benar) ...
-        // Note: Pastikan fungsi switchTab dan loadPending memanggil ID yang sesuai di atas.
+        
+        const form = document.getElementById('reportForm');
+        const btn = document.getElementById('submitBtn');
+        const selectPetugas = document.getElementById('petugas');
+        const selectLokasi = document.getElementById('lokasi');
+        const selectPekerjaan = document.getElementById('pilihanPekerjaan');
+        const wrapperLokasiLainnya = document.getElementById('wrapperLokasiLainnya');
+        const lokasiManual = document.getElementById('lokasiManual');
+        const inputPengawas = document.getElementById('pengawasOtomatis');
+        const successMsg = document.getElementById('successMessage');
+        const inputFoto = document.getElementById('foto');
+        const previewContainer = document.getElementById('previewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+
+        let dataMapping = {}; 
+        window.currentUserPengawas = null;
+
+        // --- FUNGSI LOAD AWAL ---
+        window.onload = function() {
+            // Load Petugas & Lokasi
+            fetch(scriptURL)
+                .then(res => res.json())
+                .then(data => {
+                    dataMapping = data;
+                    selectPetugas.innerHTML = '<option value="">-- Pilih Nama --</option>';
+                    Object.keys(data).sort().forEach(nama => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = nama;
+                        selectPetugas.add(opt);
+                    });
+                });
+
+            // Load Daftar Pekerjaan
+            fetch(scriptURL + "?action=getReferensiPekerjaan")
+                .then(res => res.json())
+                .then(daftar => {
+                    selectPekerjaan.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
+                    daftar.forEach(pjk => {
+                        const opt = document.createElement('option');
+                        opt.value = opt.text = pjk;
+                        selectPekerjaan.add(opt);
+                    });
+                });
+
+            // GPS
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    document.getElementById('gps').value = pos.coords.latitude + "," + pos.coords.longitude;
+                }, err => { console.warn("GPS Dimatikan user"); });
+            }
+        };
+
+        // --- INTERAKSI FORM ---
+        selectPetugas.addEventListener('change', function() {
+            selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
+            if (this.value && dataMapping[this.value]) {
+                let listLokasi = dataMapping[this.value].lokasi;
+                listLokasi.forEach(loc => {
+                    const opt = document.createElement('option');
+                    opt.value = opt.text = loc.trim();
+                    selectLokasi.add(opt);
+                });
+                const optLainnya = document.createElement('option');
+                optLainnya.value = "Lainnya..."; optLainnya.text = "Lainnya...";
+                selectLokasi.add(optLainnya);
+                inputPengawas.value = dataMapping[this.value].pengawas || "BERKAT";
+            }
+        });
+
+        selectLokasi.addEventListener('change', function() {
+            const isManual = this.value === "Lainnya...";
+            wrapperLokasiLainnya.classList.toggle('hidden', !isManual);
+            lokasiManual.required = isManual;
+        });
+
+        inputFoto.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => { imagePreview.src = e.target.result; previewContainer.classList.remove('hidden'); }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- KIRIM DATA ---
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            btn.disabled = true;
+            btn.innerHTML = "<span>MENGIRIM...</span>";
+            
+            try {
+                const bytes = await compressImage(inputFoto.files[0]);
+                const params = new URLSearchParams({
+                    petugas: selectPetugas.value,
+                    lokasi: selectLokasi.value === "Lainnya..." ? lokasiManual.value : selectLokasi.value,
+                    catatan: selectPekerjaan.value,
+                    gps: document.getElementById('gps').value,
+                    pengawas: inputPengawas.value
+                });
+
+                const response = await fetch(`${scriptURL}?${params.toString()}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ bytes: bytes, mimeType: 'image/jpeg' })
+                });
+
+                if (response.ok) {
+                    successMsg.classList.remove('hidden');
+                    form.reset();
+                    previewContainer.classList.add('hidden');
+                    setTimeout(() => successMsg.classList.add('hidden'), 5000);
+                }
+            } catch (err) {
+                alert("Gagal mengirim laporan: " + err);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "KIRIM LAPORAN";
+            }
+        });
+
+        // --- SISTEM VERIFIKASI (PENGAWAS) ---
+        async function switchTab(mode) {
+            const isLapor = mode === 'lapor';
+            
+            if (!isLapor && !window.currentUserPengawas) {
+                const res = await fetch(scriptURL + "?action=getAuthPengawas");
+                const auth = await res.json();
+                
+                let inputNama = prompt("MASUKKAN NAMA PENGAWAS:");
+                if (!inputNama) return;
+                
+                const namaKey = inputNama.toUpperCase().trim();
+                if (auth[namaKey]) {
+                    const pin = prompt("MASUKKAN PIN KEAMANAN:");
+                    if (pin === auth[namaKey].toString()) {
+                        window.currentUserPengawas = namaKey;
+                        document.getElementById('labelLoginAs').innerText = "Login: " + namaKey;
+                    } else { alert("PIN SALAH!"); return; }
+                } else { alert("NAMA TIDAK TERDAFTAR SEBAGAI PENGAWAS!"); return; }
+            }
+
+            document.getElementById('sectionLapor').classList.toggle('hidden', !isLapor);
+            document.getElementById('sectionVerif').classList.toggle('hidden', isLapor);
+            document.getElementById('tabLaporBtn').className = isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            document.getElementById('tabVerifBtn').className = !isLapor ? 'flex-1 py-2 text-xs rounded-lg tab-active' : 'flex-1 py-2 text-xs rounded-lg text-gray-500';
+            
+            if (!isLapor) loadPending();
+        }
+
+        function loadPending() {
+            const container = document.getElementById('pendingContainer');
+            container.innerHTML = '<div class="text-center py-10"><div class="inline-block w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full loader-spin"></div><p class="text-xs text-gray-400 mt-2">Mencari laporan...</p></div>';
+            
+            fetch(scriptURL + "?action=getPending")
+                .then(res => res.json())
+                .then(data => {
+                    // Filter: Pengawas hanya melihat petugas yang di bawah tanggung jawabnya
+                    const filtered = data.filter(item => {
+                        const petData = dataMapping[item.petugas];
+                        return petData && petData.pengawas.toString().toUpperCase().trim() === window.currentUserPengawas;
+                    });
+
+                    container.innerHTML = filtered.length ? '' : '<p class="text-center py-10 italic text-gray-400 text-xs">Belum ada laporan masuk untuk Anda.</p>';
+                    
+                    filtered.forEach(item => {
+                        container.innerHTML += `
+                            <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-[13px] font-bold text-gray-800">${item.petugas}</p>
+                                        <p class="text-[10px] text-gray-500">📍 ${item.lokasi}</p>
+                                    </div>
+                                    <span class="bg-yellow-100 text-yellow-700 text-[9px] px-2 py-0.5 rounded-full font-bold">PENDING</span>
+                                </div>
+                                <p class="text-[11px] text-gray-600 bg-gray-50 p-2 rounded-lg italic">"${item.catatan}"</p>
+                                <div class="flex space-x-2">
+                                    <a href="${item.foto}" target="_blank" class="flex-1 bg-gray-800 text-white text-[10px] py-2 rounded-lg font-bold text-center">LIHAT FOTO</a>
+                                    <button onclick="doVerify(${item.rowId}, 'APPROVED')" class="flex-1 bg-green-600 text-white text-[10px] py-2 rounded-lg font-bold">SETUJU</button>
+                                    <button onclick="doVerify(${item.rowId}, 'REJECTED')" class="flex-1 bg-red-500 text-white text-[10px] py-2 rounded-lg font-bold">TOLAK</button>
+                                </div>
+                            </div>`;
+                    });
+                });
+        }
+
+        function doVerify(rowId, status) {
+            if (!confirm("Konfirmasi " + status + " laporan ini?")) return;
+            const btnTarget = event.target;
+            btnTarget.innerText = "...";
+            btnTarget.disabled = true;
+
+            fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
+                .then(() => loadPending())
+                .catch(err => alert("Gagal verifikasi: " + err));
+        }
+
+        function logoutPengawas() { window.currentUserPengawas = null; switchTab('lapor'); }
+
+        // --- HELPER: KOMPRESI GAMBAR ---
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width; let height = img.height;
+                        const maxSide = 1000;
+                        if (width > height) { if (width > maxSide) { height *= maxSide / width; width = maxSide; } }
+                        else { if (height > maxSide) { width *= maxSide / height; height = maxSide; } }
+                        canvas.width = width; canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]); 
+                    };
+                };
+            });
+        }
     </script>
 </body>
 </html>
