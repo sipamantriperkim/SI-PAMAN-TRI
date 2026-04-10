@@ -96,6 +96,14 @@
                 </div>
                 <button onclick="logoutPengawas()" class="text-[10px] bg-red-100 text-red-600 px-3 py-1.5 rounded-lg font-bold hover:bg-red-200">KELUAR</button>
             </div>
+
+            <div id="bulkActionArea" class="hidden py-2">
+                <button onclick="doVerifyAll()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl shadow-md text-xs flex justify-center items-center space-x-2 transition-all">
+                    <span>✅ SETUJUI SEMUA LAPORAN</span>
+                </button>
+                <p class="text-[9px] text-center text-gray-400 mt-2 italic">*Hanya menyetujui laporan dalam daftar Anda</p>
+            </div>
+
             <div id="pendingContainer" class="space-y-4 pt-2">
                 <p class="text-center text-gray-400 py-10 italic">Memuat data...</p>
             </div>
@@ -107,8 +115,7 @@
     </div>
 
     <script>
-        // Mas, pastikan URL Script ini sudah benar sesuai Deployment terbaru di Apps Script
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbzEGch9rUepTDSIY0xF17mQEzlUxV4g9cv5W0nNVTKPAJtrQm_F8vsH5FIX5ZwUsrWu3A/exec';
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbya3ttz1cGziiugJMEDrJwRdqB0NzfnjJf5hoPp3G3jY6DKW6yLWSLt4kf0drLraN3Lfg/exec';
         
         const form = document.getElementById('reportForm');
         const btn = document.getElementById('submitBtn');
@@ -122,13 +129,12 @@
         const inputFoto = document.getElementById('foto');
         const previewContainer = document.getElementById('previewContainer');
         const imagePreview = document.getElementById('imagePreview');
+        const bulkArea = document.getElementById('bulkActionArea');
 
         let dataMapping = {}; 
         window.currentUserPengawas = null;
 
-        // --- FUNGSI LOAD AWAL ---
         window.onload = function() {
-            // Load Petugas & Lokasi
             fetch(scriptURL)
                 .then(res => res.json())
                 .then(data => {
@@ -141,7 +147,6 @@
                     });
                 });
 
-            // Load Daftar Pekerjaan
             fetch(scriptURL + "?action=getReferensiPekerjaan")
                 .then(res => res.json())
                 .then(daftar => {
@@ -153,7 +158,6 @@
                     });
                 });
 
-            // GPS
             if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition(pos => {
                     document.getElementById('gps').value = pos.coords.latitude + "," + pos.coords.longitude;
@@ -161,7 +165,6 @@
             }
         };
 
-        // --- INTERAKSI FORM ---
         selectPetugas.addEventListener('change', function() {
             selectLokasi.innerHTML = '<option value="">-- Pilih Lokasi Tugas --</option>';
             if (this.value && dataMapping[this.value]) {
@@ -193,7 +196,6 @@
             }
         });
 
-        // --- KIRIM DATA ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             btn.disabled = true;
@@ -228,7 +230,6 @@
             }
         });
 
-        // --- SISTEM VERIFIKASI (PENGAWAS) ---
         async function switchTab(mode) {
             const isLapor = mode === 'lapor';
             
@@ -260,11 +261,11 @@
         function loadPending() {
             const container = document.getElementById('pendingContainer');
             container.innerHTML = '<div class="text-center py-10"><div class="inline-block w-8 h-8 border-4 border-green-500 border-t-transparent rounded-full loader-spin"></div><p class="text-xs text-gray-400 mt-2">Mencari laporan...</p></div>';
-            
+            bulkArea.classList.add('hidden');
+
             fetch(scriptURL + "?action=getPending")
                 .then(res => res.json())
                 .then(data => {
-                    // Filter: Pengawas hanya melihat petugas yang di bawah tanggung jawabnya
                     const filtered = data.filter(item => {
                         const petData = dataMapping[item.petugas];
                         return petData && petData.pengawas.toString().toUpperCase().trim() === window.currentUserPengawas;
@@ -272,6 +273,8 @@
 
                     container.innerHTML = filtered.length ? '' : '<p class="text-center py-10 italic text-gray-400 text-xs">Belum ada laporan masuk untuk Anda.</p>';
                     
+                    if(filtered.length > 0) bulkArea.classList.remove('hidden');
+
                     filtered.forEach(item => {
                         container.innerHTML += `
                             <div class="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-3">
@@ -295,18 +298,32 @@
 
         function doVerify(rowId, status) {
             if (!confirm("Konfirmasi " + status + " laporan ini?")) return;
-            const btnTarget = event.target;
-            btnTarget.innerText = "...";
-            btnTarget.disabled = true;
-
             fetch(`${scriptURL}?action=verify&rowId=${rowId}&status=${status}&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
                 .then(() => loadPending())
                 .catch(err => alert("Gagal verifikasi: " + err));
         }
 
+        // FUNGSI VERIFIKASI MASSAL
+        function doVerifyAll() {
+            if (!confirm("Apakah Anda yakin ingin menyetujui SEMUA laporan yang ada di antrean Anda?")) return;
+            
+            const btnOriginal = bulkArea.innerHTML;
+            bulkArea.innerHTML = '<div class="text-center py-2"><div class="inline-block w-5 h-5 border-2 border-green-500 border-t-transparent rounded-full loader-spin"></div><p class="text-[10px] text-green-600 font-bold mt-1">MEMPROSES SEMUA...</p></div>';
+
+            fetch(`${scriptURL}?action=verifyAll&pengawas=${window.currentUserPengawas}`, { method: 'POST' })
+                .then(res => res.text())
+                .then(result => {
+                    alert(result);
+                    loadPending();
+                })
+                .catch(err => alert("Gagal verifikasi massal: " + err))
+                .finally(() => {
+                    bulkArea.innerHTML = btnOriginal;
+                });
+        }
+
         function logoutPengawas() { window.currentUserPengawas = null; switchTab('lapor'); }
 
-        // --- HELPER: KOMPRESI GAMBAR ---
         async function compressImage(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
